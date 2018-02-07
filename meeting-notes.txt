@@ -1,0 +1,113 @@
+# 02/07/2018
+
+Covered today:
+
++ Monads, and examples of state monad and list monad
++ Starting code for the SAT example project
++ You should install hdevtools to interactively typecheck files.
+  First, install stack
+
+    http://haskellstack.org
+
+  Then, tell stack to use your global ghc installation for its "global project"
+  settings on your machine:
+
+      stack config set system-ghc --global true
+
+  (Described here:)
+
+  https://docs.haskellstack.org/en/stable/faq/#i-already-have-ghc-installed-can-i-still-use-stack
+
+  Then install hdevtools
+
+      stack install hdevtools
+
+  You may need to add ~/.local/bin to your path, by adding this to your .bashrc
+  (or .zshrc, or whatever):
+
+      export PATH=$HOME/.local/bin:$PATH
+
+  My syntastic config looks like this in my .vimrc:
+
+      " Make Syntastic always update the errors window
+      let g:syntastic_always_populate_loc_list = 1
+      let g:syntastic_auto_loc_list = 1
+      let g:syntastic_check_on_open = 0
+      let g:syntastic_check_on_wq = 0
+    
+  (I believe these are recommended settings from the syntastic install
+  instructions)
+
+  Get the Start.hs file running with hdevtools. Edit it to cause a type error
+  and make sure it's reported in a vim buffer.
+
+Next time:
+
+- Implement a satisfiabilitiy function in Haskell that uses an environment
+  rather than substitution for keeping track of "guessed" variable assignments.
+  (Refer to notes from last time). Use Start.hs in the repo as a starting
+  point.
+- Re-read the monads chapter in LYAH, to reinforce concepts discussed in
+  today's meeting.
+
+# 01/31/2018
+
+What we covered today:
+
++ we went over types, kinds, type classes, and the functor type class
++ we briefly discussed the first two sections of Yang et al’s “Finding and
+  Understanding Bugs in C Compilers”
+
+For next time:
+
+- Read “Reflections on Trusting Trust” by Ken Thompson [1]
+- Work through the Learn You a Haskell book up through chapter 13 “For a Few
+  Monads More” (same goal as before)
+- I want us to start building a naive SAT solver in Haskell, based on this blog
+  post [2]
+  * copy the datatype definition for Expr
+  * define your own function for computing the set of variables that occur in
+    an expression (rather than just the first free variable, shown in the blog
+    post)
+  * define an evaluation function which, given a mapping from variables to
+    booleans, computes the truth value for a given formula.
+  * e.g., an example expression (((1 /\ x) \/ (y /\ x) \/ 0) /\ y) and a
+    mapping from variables to booleans (x := 0, y := 1) evaluates to 0, because
+    (((1 /\ x) \/ (y /\ x) \/ 0) /\ y) = ((0 \/ 0 \/ 0) /\ 1) == (0 \/ 1) = 0.
+- Feel free to work together and pair program
+- We will look at the code everyone came up with together on a projector and
+  discuss design decisions.
+- I’m going to set up a slack channel for us to discuss research activity.
+  Please install stack on your laptop and/or phone if you don’t already have
+  it. I’ll send invites to the channel shortly.
+
+[1] https://www.ece.cmu.edu/~ganger/712.fall02/papers/p761-thompson.pdf
+[2] http://andrew.gibiansky.com/blog/verification/writing-a-sat-solver/
+
+# 01/22/2018
+
+(Just Ramy)
+
++ You and I will meet Tuesdays 10:30-11:30
++ For each meeting, please prepare in LaTeX a short report on your progress
+  since last week’s meeting. Print it out and we will discuss it together at the
+  beginning of the meeting.
++ After each meeting I will email you summarizing the meeting and setting goals
+  for next week.
++ We covered background and motivation for verified compilers and program
+  analyzers.
++ We covered at a high level the goal of automatically proving that a function
+  is monotonic
++ We covered at a high level the goal of automatically proving two
+  set-theoretic functions are equal
++ We set goals for learning Haskell and monads
+
+Goals for next week:
+
++ Work through the Learn You a Haskell book up through chapter 13 “For a Few
+  Monads More”
++ Read sections 1 and 2 of Yang et al’s “Finding and Understanding Bugs in C
+  Compilers” [1]. Come prepared with questions for anything in those sections
+  that you didn’t understand.
+
+[1] https://www.cs.utah.edu/~regehr/papers/pldi11-preprint.pdf
