@@ -1,0 +1,9 @@
+Example usage:
+
+let e = (And (Or (Var 'a') (Var 'b')) (Var 'c'))
+satisfiable e
+-> [fromList [('a',False),('b',True),('c',True)],fromList [('a',True),('b',False),('c',True)],fromList [('a',True),('b',True),('c',True)]]
+
+let e = (And (And (Var 'a') (Var 'b')) (Var 'c'))
+satisfiable e
+-> [fromList [('a',True),('b',True),('c',True)]]
