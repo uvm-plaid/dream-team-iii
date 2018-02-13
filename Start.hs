@@ -1,5 +1,7 @@
 module Start where
 
+import Data.Maybe
+
 import Data.Set (Set)
 import qualified Data.Set as Set
 
@@ -58,5 +60,68 @@ allPossibleMaps expr =
   [allP (Set.toList (fvs expr)) x| x <- vars]
   where vars = subseq (Set.toList (fvs expr)) 
 
-satisfiable :: Expr -> BoolMap -> [BoolMap]
-satisfiable e env = [Map.fromList [('c', True)] ]
+--Given a BoolMap and an expression, replaces all free variables
+--in the expression with their values in the BoolMap
+--Ex: 
+--  e    = (And (And (Var 'a') (Var 'b')) (Var 'c'))
+--  bmap = {a : True, b : False, c : True}
+--  ->     (And (And (Const True) (Const False)) (Const True)) 
+injectMapValues :: BoolMap -> Expr -> Expr
+injectMapValues bmap e =
+  case e of
+    Var v -> Const (Data.Maybe.fromJust (Map.lookup v bmap))
+    Not e -> Not (inject e)
+    Or x y -> Or (inject x) (inject y)
+    And x y -> And (inject x) (inject y)
+    Const b -> Const b
+  where
+    inject = injectMapValues bmap   
+
+-- Stolen from the blog
+-- Extract the boolean from the Const constructor.
+unConst :: Expr -> Bool
+unConst (Const b) = b
+unConst _ = error "Not Const"
+
+-- Also stolen from the blog
+simplify :: Expr -> Expr
+simplify (Const b) = Const b
+simplify (Var v) = Var v
+simplify (Not e) =
+  case simplify e of
+    Const b -> Const (not b)
+    e -> Not e
+simplify (Or x y) =
+  -- Get rid of False values, which are irrelevant.
+  let es = filter (/= Const False) [simplify x, simplify y]
+  in
+    -- If True is in a branch, the entire expression is True.
+    if Const True `elem` es
+    then Const True
+    else
+      case es of
+        -- If all the values were False, this 'or' is unsatisfied.
+        [] -> Const False
+        [e] -> e
+        [e1, e2] -> Or e1 e2
+-- Dual to the simplify (Or x y) definition.
+simplify (And x y) =
+  let es = filter (/= Const True) [simplify x, simplify y]
+  in
+    if Const False `elem` es
+    then Const False
+    else
+      case es of
+        [] -> Const True
+        [e] -> e
+        [e1, e2] -> And e1 e2
+
+--Given a BoolMap and Expression, returns whether or not
+--BoolMap can be used to satisfy expression
+canSatisfy :: BoolMap -> Expr -> Bool
+canSatisfy b e = unConst (simplify (injectMapValues b e))
+
+--Generates all possible BoolMaps that can be used to satisfy
+--a given expression. Return an empty list if none exist.
+satisfiable :: Expr -> [BoolMap]
+satisfiable e = [bm | bm <- allPossibleMaps e, canSatisfy bm e]
