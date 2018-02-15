@@ -1,3 +1,17 @@
+# 02/14/2018
+
+Covered today:
+
++ Went over Ramy and Adam's SAT solving code. Great work both of you!
+
+Next time:
+
+- See the file SATEnv.hs for my solution for what I had in mind. Your homework
+  for next week is to write a monadic version of my solution using the Reader
+  monad. See the file for details and instructions.
+- If you get stuck on something, feel free to ping me on Slack and I can help
+  out.
+
 # 02/07/2018
 
 Covered today:
