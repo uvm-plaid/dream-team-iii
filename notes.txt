@@ -1,0 +1,32 @@
+t env ≔ [x ↦ T, y ↦ F, Z ↦ T]
+
+eval (x ∧ (y ∨ z)) env
+= (eval x env) && (eval (y ∨ z) env)
+= T && (eval y env || eval z env)
+= T && (F || T)
+= T
+
+solve (x ∧ (y ∨ z))
+=  solve (simplify (subst x True (x ∧ (y ∨ z)))) 
+++ solve (simplify (subst x False (x ∧ (y ∨ z))))
+
+= solve (simplify (True ∧ (y ∨ z)))
+++ solve (simplify (False ∧ (y ∨ z)))
+
+= solve (y ∨ z)
+++ solve False
+
+(λx. λy. x y) (λz. z) True 
+[x ↦ (λz. z)](λy. x y) True
+= (λy. (λz. z) y) True
+= (λz. z) True
+= True
+
+eval (  (λx. λy. x y) (λz. z) True  ) {} 
+= eval (  (λy. x y) True  ) {x ↦ λz. z}
+= eval (  x y  ) [env₁ ≔ {x ↦ λz.z , y ↦ True}]
+= apply (eval x env₁) (eval y env₁)
+= apply (λz.z) True
+= eval (z)  {z ↦ True}
+
+

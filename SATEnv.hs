@@ -42,7 +42,7 @@ type BoolMap = Map Name Bool
 --   the value of a variable.
 -- ⋆ Invariant: assume that for any call to ⸨eval e env⸩, if ⸨x ∈ fvs e⸩ then
 --   ⸨env[x]⸩ is defined.
-eval :: Expr -> BoolMap -> Bool
+eval :: Expr -> (BoolMap -> Bool)
 eval (Const b) env = b
 eval (Var x) env = env Map.! x
 eval (Not e) env = not (eval e env)
@@ -83,7 +83,23 @@ main = do
 -- comment [!!] is where you should start writing code, but make sure you
 -- understand the code in-between first.
 
-newtype Reader r a = Reader { unReader :: r -> a }
+-- we could have also defined `Reader` and `unReader` in one line as follows:
+--
+--     newtype Reader r a = Reader { unReader :: r -> a }
+--
+data Reader r a = Reader (r -> a)
+
+unReader :: forall r a. Reader r a -> (r -> a)
+unReader (Reader f) = f
+
+-- we could define this but it isn't very useful, because we can always just
+-- write `Reader f`
+--
+--     mkReader :: forall r a. (r -> a) -> Reader r a
+--     mkReader f = Reader f
+
+return_unwrapped :: forall r a. a -> (r -> a)
+return_unwrapped x = \ _ -> x
 
 instance Monad (Reader r) where
   return :: forall a. a -> Reader r a
@@ -96,6 +112,9 @@ instance Monad (Reader r) where
 instance Functor (Reader r) where {fmap = liftM}
 instance Applicative (Reader r) where {pure = return;(<*>) = ap}
 
+--          the enviornment    the "result" of the computation
+--  the monad    |             | 
+--        ⌄      ⌄      ⌄-------
 ask :: Reader BoolMap BoolMap
 ask = Reader $ \ r -> r
 
@@ -103,11 +122,23 @@ local :: forall a. BoolMap -> Reader BoolMap a -> Reader BoolMap a
 local env xM = Reader $ \ _ -> unReader xM env
 
 -- example of looking up a variable 'x' and 'y' from the reader environment
+--              the enviornment    the "result" of the computation
+--      the monad    |             | 
+--            ⌄      ⌄      ⌄-------
+lookup_x_annotated :: Reader BoolMap Bool
+lookup_x_annotated = do
+  (env :: BoolMap) <- (ask :: Reader BoolMap BoolMap)
+  let result :: Bool = env Map.! 'x'
+  (return result) :: Reader BoolMap Bool
 
 lookup_x :: Reader BoolMap Bool
 lookup_x = do
   env <- ask
-  return (env Map.! 'x')
+  let result = env Map.! 'x'
+  return result
+
+lookup_x_guts :: BoolMap -> Bool
+lookup_x_guts = unReader lookup_x
 
 lookup_y :: Reader BoolMap Bool
 lookup_y = do
