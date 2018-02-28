@@ -179,15 +179,42 @@ exampleMain = do
 -- [!!] Complete these definitions...
 
 evalM :: Expr -> Reader BoolMap Bool
-evalM = undefined
+evalM (Const b) = return b
+evalM (Var x) = do
+  env <- ask
+  return (env Map.! x)
+evalM (Not e) = do
+  b <- evalM e
+  return (not b)
+evalM (Or x y) = do
+  b1 <- evalM x
+  b2 <- evalM y
+  return (b1 || b2)
+evalM (And x y) = do
+  b1 <- evalM x
+  b2 <- evalM y
+  return (b1 && b2)
 
 satisfiableVarsM :: [Name] -> Expr -> Reader BoolMap [BoolMap]
-satisfiableVarsM xs e = undefined
+satisfiableVarsM xs e = case xs of
+  [] -> do
+    b <- evalM e
+    if b == True 
+      then do
+        env <- ask
+        return [env]
+      else 
+        return []
+  x:xs' -> do
+    env <- ask
+    rs1 <- local (Map.insert x True env) (satisfiableVarsM xs' e)
+    rs2 <- local (Map.insert x False env) (satisfiableVarsM xs' e)
+    return (rs1 ++ rs2)
 
 satisfiableM :: Expr -> [BoolMap]
 satisfiableM e =
   let xs = Set.toList (fvs e)
-  in undefined (satisfiableVarsM xs e)
+  in unReader (satisfiableVarsM xs e) Map.empty
 
 -- run this function by loading this file in ghci:
 --     > ghci SATEnv.hs

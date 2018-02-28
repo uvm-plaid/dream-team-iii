@@ -89,6 +89,8 @@ main = do
 --
 data Reader r a = Reader (r -> a)
 
+type M a = Reader BoolMap a
+
 unReader :: forall r a. Reader r a -> (r -> a)
 unReader (Reader f) = f
 
@@ -98,8 +100,30 @@ unReader (Reader f) = f
 --     mkReader :: forall r a. (r -> a) -> Reader r a
 --     mkReader f = Reader f
 
-return_unwrapped :: forall r a. a -> (r -> a)
-return_unwrapped x = \ _ -> x
+-- returnuw :: a -> M a
+-- returnuw :: a -> (BoolMap -> a)
+-- returnuw :: a -> BoolMap -> a
+returnuw :: a -> BoolMap -> a
+returnuw x = \ _ -> x
+
+-- binduw :: M a -> (a -> M b) -> M b
+-- binduw :: (BoolMap -> a) -> (a -> BoolMap -> b) -> (BoolMap -> b)
+binduw :: (BoolMap -> a) -> (a -> BoolMap -> b) -> BoolMap -> b
+binduw (xM :: BoolMap -> a) (k :: a -> BoolMap -> b) = \ (env :: BoolMap) -> k (xM env) env
+--                                                     \-----------------------------------/
+--                                                                        M b
+
+localuw :: BoolMap -> (BoolMap -> a) -> (BoolMap -> a)
+-- also could be...
+-- localuw env xM = returnuw (xM env)
+localuw env xM = \ _ -> xM env
+
+-- do 
+--   x <- xM
+--   f x
+-- ===
+-- binduw xM (\ x -> f x) :: M Bool
+-- binduw xM (\ x -> f x) :: BoolMap -> Bool
 
 instance Monad (Reader r) where
   return :: forall a. a -> Reader r a
@@ -109,8 +133,17 @@ instance Monad (Reader r) where
   xM >>= k = Reader $ \ r ->
     let x = unReader xM r
     in unReader (k x) r
+-- fmap :: (Functor t) => (a -> b) -> (t a -> t b)
+-- liftM :: (Monad m) => (a -> b) -> (m a -> m b)
 instance Functor (Reader r) where {fmap = liftM}
 instance Applicative (Reader r) where {pure = return;(<*>) = ap}
+
+myliftM :: forall r a b. (a -> b) -> Reader r a -> Reader r b
+myliftM f (xM :: Reader r a) = do
+  (x :: a) <- (xM :: Reader r a)
+  return (f x) :: Reader r b
+  --
+  -- xM >>= (\ x -> return (f x))
 
 --          the enviornment    the "result" of the computation
 --  the monad    |             | 
@@ -131,7 +164,8 @@ lookup_x_annotated = do
   let result :: Bool = env Map.! 'x'
   (return result) :: Reader BoolMap Bool
 
-lookup_x :: Reader BoolMap Bool
+-- lookup_x :: Reader BoolMap a
+lookup_x :: M Bool
 lookup_x = do
   env <- ask
   let result = env Map.! 'x'
@@ -157,7 +191,7 @@ flip_x xM = do
 
 example :: Reader BoolMap (Bool,Bool,Bool,Bool)
 example = do
-  x1 <- lookup_x
+  (x1 :: Bool) <- (lookup_x :: M Bool)
   y1 <- lookup_y
   flip_x $ do
     x2 <- lookup_x
@@ -178,15 +212,23 @@ exampleMain = do
 
 -- [!!] Complete these definitions...
 
-evalM :: Expr -> Reader BoolMap Bool
+evalM :: Expr -> M Bool
 --unReader Reader BoolMap Bool is the same as BoolMap -> Bool
 evalM (Const b) = return b
 evalM (Var x) = do
   env <- ask 
   return (env Map.! x) 
-evalM (Not e)  = do
-  env <- ask
-  return (not ((unReader (evalM e)) env))
+-- [final solution]
+evalM (Not e) = do
+  b <- evalM e
+  return (not b :: Bool) :: M Bool
+-- evalM (Not e) =
+  -- evalM :: Reader BoolMap Bool
+  -- evalM :: BoolMap -> Bool
+  -- (evalM e :: BoolMap -> Bool) >>= (\ b -> (return (not b) :: BoolMap -> Bool))
+  -- ::
+  -- BoolMap -> Bool
+  -- return (not ((unReader (evalM e)) env))
 evalM (Or x y)  = do
   env <- ask
   return (((unReader (evalM x)) env) || ((unReader (evalM y))) env ) 

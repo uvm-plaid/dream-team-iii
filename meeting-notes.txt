@@ -1,3 +1,14 @@
+# 02/28/2018
+
+Today:
+
+- Went over reader monad solution to SATEnv.hs
+
+For Next Time:
+
++ Go over solution to SATEnv.hs and make sure everything is making sense to you.
++ Attempt a solution to SATList.hs, which combines a reader monad with a list monad.
+
 # 02/21/2018
 
 + Keep trying to do last week's assignment
