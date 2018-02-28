@@ -1,0 +1,7 @@
+let e = (And (Or (Var 'a') (Var 'b')) (Var 'c'))
+
+let t = evalM e
+
+o = unReader t
+
+o (Map.fromList [('a',False),('y',False)])
