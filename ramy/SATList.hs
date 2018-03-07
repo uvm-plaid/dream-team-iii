@@ -205,12 +205,16 @@ evalM (And x y) = do
 -- `<+>` when you need to combine multiple monadic results.
 --
 -- Hints: use do notation, ask, local and <+>
+
 allEnvs :: [Name] -> ListReader BoolMap BoolMap
-allEnvs [] = local Map.empty ask
-allEnvs (x:xs) = 
-  let first = local (Map.insert x True Map.empty) ask
-      second = local (Map.insert x False Map.empty) ask
-  in first <+> second
+allEnvs [] = ask
+allEnvs (x:xs) = do
+  env <- ask
+  let first = local (Map.insert x True env) (allEnvs xs)
+      second = local (Map.insert x False env) (allEnvs xs)
+  first <+> second
+  
+  
 
 -- The "magic" here is the first line. `allEnvs (Set.toList (fvs e))` will
 -- "return" its result, bound to `env`, *multiple times*. This means that the
@@ -228,7 +232,7 @@ satisfiableVarsM e = do
         --return env
         -- (none <+> return env)
         -- (ask <+> return env)
-    else ask
+    else none
 
 satisfiableM :: Expr -> [BoolMap]
 satisfiableM e = unListReader (satisfiableVarsM e) Map.empty
