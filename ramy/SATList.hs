@@ -94,6 +94,50 @@ instance Monad (ListReader r) where
 instance Functor (ListReader r) where {fmap = liftM}
 instance Applicative (ListReader r) where {pure = return;(<*>) = ap}
 
+foldr' :: forall a b. (a -> b -> b) -> b -> [a] -> b
+foldr' f i [] = i
+foldr' f i (x:xs) = f x (foldr' f i xs)
+
+length' :: forall a. [a] -> Int
+length' xs = foldr' (\ _ n -> n + 1) 0 xs
+
+append :: forall a. [a] -> [a] -> [a]
+append [] ys = ys
+append (x : xs) ys = x : append xs ys
+
+append_abs :: forall a b. (a -> b -> b) -> b -> [a] -> b
+append_abs f i [] = i
+append_abs f i (x : xs) = f x (append_abs f i xs)
+
+old_append :: forall a. [a] -> [a] -> [a]
+old_append xs ys = append_abs (\ x xs -> x : xs) xs ys
+
+reverse' :: forall a. [a] -> [a]
+reverse' xs = append_abs (\ x xs -> xs ++ [x]) xs []
+
+-- type ListReader r = ListT (Reader r)
+-- type ListReader r = ReaderT r []
+
+listReaderBind :: forall r a b. (r -> [a]) -> (a -> r -> [b]) -> r -> [b]
+listReaderBind (xM :: r -> [a]) (k :: a -> r -> [b]) = \ (env :: r) ->
+  let xs :: [a]
+      xs = xM env
+  in 
+  -- these two lines are the same ⌄⌄⌄
+  -- foldr (\ x ys -> k x env ++ ys) [] xs
+  flatten (listMap (\ x -> k x env) xs) :: [b]
+
+listBind :: forall a b. [a] -> (a -> [b]) -> [b]
+listBind (xs :: [a]) (k :: a -> [b]) = flatten (listMap k xs)
+
+listMap :: forall a b. (a -> b) -> [a] -> [b]
+listMap f [] = []
+listMap f (x:xs) = f x : listMap f xs
+
+flatten :: forall a. [[a]] -> [a]
+flatten [] = []
+flatten (xs:xss) = xs ++ flatten xss
+
 ask :: forall r. ListReader r r
 ask = ListReader $ \ r -> [r]
 
@@ -227,7 +271,7 @@ satisfiableVarsM e = do
   env <- allEnvs (Set.toList (fvs e))
   b <- local env (evalM e)
   if b == True
-    then (none <+> return env)   --related to e9?
+    then return env   --related to e9?
         --all typecheck but get a Map.! exception
         --return env
         -- (none <+> return env)
