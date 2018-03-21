@@ -5,9 +5,9 @@ repl:
 .PHONY: docs
 docs:
 	cabal haddock
-	cp -r dist/doc/html/asteroid ./docs
+	cp -r dist/doc/html/asteroid ../docs
 
 .PHONY: clean
 clean:
-	rm -rf docs
+	rm -rf ../docs
 
