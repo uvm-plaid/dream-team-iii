@@ -33,11 +33,11 @@ library
     -- FunctionalDependencies
     -- GADTs
     -- GeneralizedNewtypeDeriving
-    -- InstanceSigs
+    InstanceSigs
     -- KindSignatures
     -- LambdaCase
     -- MagicHash
-    -- MultiParamTypeClasses
+    MultiParamTypeClasses
     NoImplicitPrelude
     -- OverloadedStrings
     -- PartialTypeSignatures
@@ -45,7 +45,7 @@ library
     -- PostfixOperators
     -- RankNTypes
     -- RebindableSyntax
-    -- ScopedTypeVariables
+    ScopedTypeVariables
     -- StandaloneDeriving
     Strict
     StrictData
@@ -58,5 +58,5 @@ library
     -- UnboxedTuples
     -- UndecidableInstances
     -- UndecidableSuperClasses
-    -- UnicodeSyntax
+    UnicodeSyntax
     -- ViewPatterns

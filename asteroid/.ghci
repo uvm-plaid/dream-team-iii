@@ -12,11 +12,11 @@
 -- :set -XFunctionalDependencies
 -- :set -XGADTs
 -- :set -XGeneralizedNewtypeDeriving
--- :set -XInstanceSigs
+:set -XInstanceSigs
 -- :set -XKindSignatures
 -- :set -XLambdaCase
 -- :set -XMagicHash
--- :set -XMultiParamTypeClasses
+:set -XMultiParamTypeClasses
 :set -XNoImplicitPrelude
 -- :set -XOverloadedStrings
 -- :set -XPartialTypeSignatures
@@ -24,7 +24,7 @@
 -- :set -XPostfixOperators
 -- :set -XRankNTypes
 -- :set -XRebindableSyntax
--- :set -XScopedTypeVariables
+:set -XScopedTypeVariables
 -- :set -XStandaloneDeriving
 :set -XStrict
 :set -XStrictData
@@ -37,5 +37,5 @@
 -- :set -XUnboxedTuples
 -- :set -XUndecidableInstances
 -- :set -XUndecidableSuperClasses
--- :set -XUnicodeSyntax
+:set -XUnicodeSyntax
 -- :set -XViewPatterns
