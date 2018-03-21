@@ -4,5 +4,6 @@ import Lib
 
 import Lang.JSDP.Syntax
 
-interpret ∷ Exp → 𝔹
+-- [!!] TODO
+interpret ∷ Exp → 𝕊 ⇰ 𝔹 → 𝔹
 interpret = undefined

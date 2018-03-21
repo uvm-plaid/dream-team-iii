@@ -6,9 +6,10 @@ maintainer: David.Darais@uvm.edu
 cabal-version: >= 2.0
 license: BSD3
 
-library
+executable asteroid
   default-language: Haskell2010
   hs-source-dirs: src
+  main-is: Main.hs
   ghc-options: 
     -isrc 
     -Wall 
@@ -20,6 +21,10 @@ library
   exposed-modules:
     Asteroid
     Lang.JSDP
+    Lang.JSDP.Equivalence
+    Lang.JSDP.Parse
+    Lang.JSDP.Pretty
+    Lang.JSDP.SATSemantics
     Lang.JSDP.Syntax
     Lib
     Lib.Core
@@ -35,7 +40,7 @@ library
     -- GADTs
     -- GeneralizedNewtypeDeriving
     InstanceSigs
-    -- KindSignatures
+    KindSignatures
     -- LambdaCase
     -- MagicHash
     MultiParamTypeClasses
@@ -61,3 +66,4 @@ library
     -- UndecidableSuperClasses
     UnicodeSyntax
     -- ViewPatterns
+

@@ -18,17 +18,22 @@ import Prelude
 
 import qualified Prelude as HS
 import qualified Numeric.Natural as HS
+import qualified System.Exit as HS
+import qualified System.IO.Unsafe as HS
 
 import qualified Data.Text as Text
+import qualified Data.Text.IO as Text
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 
+infixr 1 ≫=
+
 infixr 2 ⇰,↦
 
-infixl 3 ⩔,⩊,∪,∖
-infixl 4 ⩓,∩
+infixl 3 ⩔,⩏,∪,∖,⩊
+infixl 4 ⩓,⩎,∩
 
-infix  5 ∈,⊆,⋿
+infix  5 ≟,≠,⋚,≤,≥,<,>,∈,⊆,⋿
 infixl 6 ∘
 
 infixr 8 :&
@@ -62,8 +67,38 @@ False ⩔ x = x
 x ⩔ False = x
 True ⩔ True = True
 
-fi ∷ 𝔹 → a → a → a
-fi b x y = case b of {True → x;False → y}
+-- Ordering
+
+(≟) ∷ (Eq a) ⇒ a → a → 𝔹
+(≟) = (HS.==)
+
+(≠) ∷ (Eq a) ⇒ a → a → 𝔹
+(≠) = (HS./=)
+
+(⋚) ∷ (Ord a) ⇒ a → a → Ordering
+(⋚) = compare
+
+(≤) ∷ (Ord a) ⇒ a → a → 𝔹
+x ≤ y = case x ⋚ y of {LT → True;EQ → True;GT → False}
+
+(≥) ∷ (Ord a) ⇒ a → a → 𝔹
+x ≥ y = case x ⋚ y of {LT → False;EQ → True;GT → True}
+
+(<) ∷ (Ord a) ⇒ a → a → 𝔹
+(<) = (HS.<)
+
+(>) ∷ (Ord a) ⇒ a → a → 𝔹
+(>) = (HS.>)
+
+(⩎) ∷ (Ord a) ⇒ a → a → a
+x ⩎ y 
+  | x ≤ y = x
+  | otherwise = y
+
+(⩏) ∷ (Ord a) ⇒ a → a → a
+x ⩏ y 
+  | x ≤ y = y
+  | otherwise = x
 
 -- Integers
 
@@ -100,9 +135,11 @@ fromString = Text.pack
 
 -- Sums
 data a ∨ b = Inl a | Inr b
+  deriving (Eq,Ord,Show)
 
 -- Products
 data a ∧ b = a :* b
+  deriving (Eq,Ord,Show)
 
 π₁ ∷ a ∧ b → a
 π₁ (x :* _) = x
@@ -112,9 +149,13 @@ data a ∧ b = a :* b
 
 -- Options
 data 𝑂 a = None | Some a
+  deriving (Eq,Ord,Show)
 
 -- Lists (non-lazy)
 data 𝐿 a = Nil | a :& 𝐿 a
+  deriving (Eq,Ord)
+
+instance (Show a) ⇒ Show (𝐿 a) where show = show ∘ toLL
 
 toLL ∷ 𝐿 a → [a]
 toLL Nil = []
@@ -348,3 +389,67 @@ dict𝐿 = Map.fromList ∘ toLL ∘ map𝐿 (\ (k :* v) → (k,v))
 
 dict ∷ (Ord k) ⇒ [(k,v)] → k ⇰ v
 dict = dict𝐿 ∘ map𝐿 (\ (k,v) → k :* v) ∘ list
+
+-- Monad
+
+class Monad (m ∷ ★ → ★) where
+  return ∷ a → m a
+  (≫=) ∷ m a → (a → m b) → m b
+
+(≫) ∷ (Monad m) ⇒ m a → m b → m b
+xM ≫ yM = xM ≫= \ _ → yM
+
+-- RebindableSyntax
+(>>=) ∷ (Monad m) ⇒ m a → (a → m b) → m b
+(>>=) = (≫=)
+
+-- Rebindable Syntax
+(>>) ∷ (Monad m) ⇒ m a → m b → m b
+(>>) = (≫)
+
+skip ∷ (Monad m) ⇒ m ()
+skip = return ()
+
+each𝐿 ∷ (Monad m) ⇒ (a → m ()) → 𝐿 a → m ()
+each𝐿 f = fold𝐿 skip $ \ x yM → yM ≫ f x
+
+eachWith𝐿 ∷ (Monad m) ⇒ 𝐿 a → (a → m ()) → m () 
+eachWith𝐿 xs f = each𝐿 f xs
+
+exec𝐿 ∷ (Monad m) ⇒ 𝐿 (m ()) → m () 
+exec𝐿 = each𝐿 id
+
+-- IO
+
+instance Monad IO where
+  return = HS.return
+  (≫=) = (HS.>>=)
+
+print ∷ 𝕊 → IO ()
+print = Text.putStr
+
+println ∷ 𝕊 → IO ()
+println s = exec𝐿 $ list [print s,print "\n"]
+
+printsln ∷ 𝐿 𝕊 → IO ()
+printsln ss = exec𝐿 $ list [eachWith𝐿 ss print,print "\n"]
+
+printlns ∷ 𝐿 𝕊 → IO ()
+printlns ss = eachWith𝐿 ss println
+
+abortIO ∷ IO a
+abortIO = HS.exitWith $ HS.ExitFailure $ HS.fromIntegral 1
+
+readInput ∷ IO 𝕊
+readInput = Text.getContents
+
+readFile ∷ 𝕊 → IO 𝕊
+readFile = Text.readFile ∘ Text.unpack
+
+writeFile ∷ 𝕊 → 𝕊 → IO ()
+writeFile fn = Text.writeFile (Text.unpack fn)
+
+trace ∷ 𝕊 → a → a
+trace s x = HS.unsafePerformIO $ do
+  println s
+  return x

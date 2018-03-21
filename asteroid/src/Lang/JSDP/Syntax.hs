@@ -27,3 +27,4 @@ data Exp =
   | Var 𝕊
   | Join Exp Exp
   | DProd Exp Exp
+  deriving (Eq,Ord,Show)

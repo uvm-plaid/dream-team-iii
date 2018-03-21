@@ -9,10 +9,12 @@
 ⇰  /r|=
 ↦  /r|-
 
-⊔  \j      "join"
 ⋈  \bow    "bowtie"
 ⋉  \bowl   "bowtie left"
 ⋊  \bowr   "bowtie right"
+
+∪  \su     "set union"
+∩  \si     "set intersection"
 
 ∧  \and    "and"
 ∨  \or     "or"
@@ -20,10 +22,20 @@
 ⩔  \hor    "heavy or"
 ⩓  \hand   "heavy and"
 
-∪  \su     "set union"
-∩  \si     "set intersection"
+⊔  \j      "join"
+⊓  \m      "meet"
+
+⩏  \hj     "heavy join"
+⩎  \hm     "heavy meet"
 
 ⊆  \s<=    "set less than or equal"
+
+≟  /=?
+≠  /=/
+⋚  /<=>=
+≤  \<=
+≥  \>=
+
 
 ≫= \>>=
 ⊞  \s+     "square plus"
@@ -45,3 +57,4 @@ etc…
 λ  \lambda
 π  \pi
 etc…
+
