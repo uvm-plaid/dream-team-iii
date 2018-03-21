@@ -5,3 +5,24 @@ Reasoning
 Order-Independent
 Decision procedure
 (ASTEROID)
+
+[Suggestions welcome for other bad or worse backronyms that include similar
+keywords.]
+
+# Setup
+
+Make sure your current directory is this directory, e.g.:
+
+    cd asteroid
+
+Set up a cabal sandbox:
+
+    cabal sandbox init
+
+Install dependencies for the project:
+
+    cabal install --dependencies-only
+
+Build the project:
+
+    cabal build
