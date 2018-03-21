@@ -26,3 +26,13 @@ Install dependencies for the project:
 Build the project:
 
     cabal build
+
+To build project documentation:
+
+    make docs
+
+E.g., to see the docs for the whole project open:
+
+    docs/html/asteroid/index.html
+
+in any web browser.

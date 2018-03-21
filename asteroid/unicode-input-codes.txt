@@ -1,12 +1,47 @@
-→  \r
+→  \r      "rightarrow"
 ∷  \::
-⇒  \r= 
-∀  \all
+⇒  \r=     
+∀  \all    "forall"
+∈  \in     "in"
+⋿  \mem    "member"
+∖  \set\   "set slash"
 
-⊔  \j
-⋈  \bow
-⋉  \bowl
-⋊  \bowr
+⇰  /r|=
+↦  /r|-
 
-𝔹  \bbB
-𝕊  \bbS
+⊔  \j      "join"
+⋈  \bow    "bowtie"
+⋉  \bowl   "bowtie left"
+⋊  \bowr   "bowtie right"
+
+∧  \and    "and"
+∨  \or     "or"
+
+⩔  \hor    "heavy or"
+⩓  \hand   "heavy and"
+
+∪  \su     "set union"
+∩  \si     "set intersection"
+
+⊆  \s<=    "set less than or equal"
+
+≫= \>>=
+⊞  \s+     "square plus"
+
+⩊  \w
+
+𝑝  \itp    "italic p"
+𝑃  \itP    "italic P"
+𝑥  \itx    "italic x"
+𝑋  \itX    "italic X"
+etc…
+
+𝕓  \bbb    "blackboard-bold b"
+𝔹  \bbB    "blackboard-bold B"
+𝕩  \bbx    "blackboard-bold x"
+𝕏  \bbX    "blackboard-bold X"
+etc…
+
+λ  \lambda
+π  \pi
+etc…

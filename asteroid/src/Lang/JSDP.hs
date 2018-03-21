@@ -1,5 +1,5 @@
 module Lang.JSDP 
-  ( module Lang.JSDP.AST
+  ( module Lang.JSDP.Syntax
   ) where
 
-import Lang.JSDP.AST
+import Lang.JSDP.Syntax

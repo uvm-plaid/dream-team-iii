@@ -14,12 +14,13 @@ library
     -Wall 
     -fno-warn-orphans
   build-depends: 
-      base == 4.10.*
-    , text == 1.2.*
+      base       == 4.10.*
+    , text       == 1.2.*
+    , containers == 0.5.*
   exposed-modules:
     Asteroid
     Lang.JSDP
-    Lang.JSDP.AST
+    Lang.JSDP.Syntax
     Lib
     Lib.Core
   default-extensions:
@@ -39,12 +40,12 @@ library
     -- MagicHash
     MultiParamTypeClasses
     NoImplicitPrelude
-    -- OverloadedStrings
+    OverloadedStrings
     -- PartialTypeSignatures
     -- PolyKinds
     -- PostfixOperators
     -- RankNTypes
-    -- RebindableSyntax
+    RebindableSyntax
     ScopedTypeVariables
     -- StandaloneDeriving
     Strict
@@ -53,7 +54,7 @@ library
     -- TupleSections
     -- TypeApplications
     -- TypeFamilies
-    -- TypeOperators
+    TypeOperators
     -- TypeSynonymInstances
     -- UnboxedTuples
     -- UndecidableInstances
