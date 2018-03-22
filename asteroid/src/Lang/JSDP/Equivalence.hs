@@ -4,23 +4,24 @@ import Lib
 
 import Lang.JSDP.Syntax
 
-data Atom = Lit 𝔹 | Var ℕ
-  deriving (Eq,Ord,Show)
+-- NF is a "sum of products" representation.
+type NF = 𝑃 (𝐿 𝕊)
 
-data NF = 𝑃 (𝐿 Atom)
-  deriving (Eq,Ord,Show)
+-- A mapping back from normal forms to expressions:
+unnormalize ∷ NF → Exp
+unnormalize sps = 
+  foldr𝐿 (Lit False) Join
+  $ map𝐿 (foldr𝐿 (Lit True) DProd)
+  $ map𝐿 (map𝐿 Var) 
+  $ list𝑃 sps
 
 -- [!!] TODO
-normalizeR 
-  ∷ Exp              -- ^ The JSDP expression
-  → ℕ                -- ^ The next unused number to assign to the next unseen variable
-  → (𝕊 ⇰ ℕ)          -- ^ The map of existing assignments from variables to numbers
-  → NF ∧ ℕ ∧ (𝕊 ⇰ ℕ) -- ^ The normalized expression, along with updated unused number
-                     --   and variable mapping
-normalizeR e n varmap = undefined
-
-normalize ∷ Exp → NF
-normalize e = π₁ $ π₁ $ normalizeR e (nat 0) empty𝐷
+-- it should be the case that `unnormalize (normalize e)` returns an
+-- "equivalent" formula, modulo the laws shown in Syntax.hs.
+normalize 
+  ∷ Exp  -- ^ The JSDP expression
+  → NF   -- ^ The normalized expression.
+normalize e = undefined
 
 equiv ∷ Exp → Exp → 𝔹
 equiv e₁ e₂ = normalize e₁ ≟ normalize e₂

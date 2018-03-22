@@ -1,3 +1,32 @@
+# 02/21/2018
+
+- Went over basic project structure of long-term research code base
+
+For Next Time:
+
++ Get GHC 8.2.2 (or newer) working
++ Familiarize yourself with the project directory, and skim through
+  src/Lib/Core.hs. Ask questions on Slack if something doesn't make sense to
+  you, or play around with the code on your own.
++ There are two TODOs in the project:
+    * in src/JSDP/SATSemantics.hs---implement the (non-monadic)
+      environment-based evaluator for SAT expressions here. Interpret the Join
+      constructor as disjunction, and the DProd constructor as conjunction.
+      Only use helper functions (e.g., for booleans) from the src/Lib/Core.hs
+      file. (That is, don't import any new modules.)
+    * in src/JSDP/Equivalence.hs---implement the normalization procedure which
+      translates Exp expressions in NF expressions. NF stands for normal form,
+      which is a canonical representation for JSDP terms. If two terms are
+      equal modulo the laws shown in Syntax.hs, they should be structurally
+      equal as NF terms. E.g., the expression `(x ⊔ y) ⋉ z` should normalize to
+      the sum of products {[x,z],[y,z]}, which unnormalizes to 
+      `(x ⋉ z ⋉ 1) ⊔ (y ⋉ z ⋉ 1) ⊔ 0` which is equivalent to the original
+      expression via the algebraic laws shown in Syntax.hs.
+  Try to complete these TODOs. There are examples of running code from the
+  project in src/Main.hs. Currently it prints out a reversed list, a JSDP
+  expression, and an unnormalized JSDP expression. Feel free to add more
+  printouts to this main file and run `make run` to test out your code.
+
 # 02/28/2018
 
 Today:
