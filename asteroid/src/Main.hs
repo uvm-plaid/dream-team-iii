@@ -5,11 +5,36 @@ import Asteroid
 
 main ∷ IO ()
 main = do
-  println $ show𝕊 $ foldr𝐿 Nil (:&) $ list [1,2,3,4]
-  println $ show𝕊 $ Join (Lit False) (DProd (Lit True) (Var "x"))
-  println $ show𝕊 $ unnormalize $ set [list ["x","y"],list ["z"]]
+  -- println $ show𝕊 $ foldr𝐿 Nil (:&) $ list [1,2,3,4]
+  -- println $ show𝕊 $ Join (Lit False) (DProd (Lit True) (Var "x"))
+  -- println $ show𝕊 $ unnormalize $ set [list ["x","y"],list ["z"],list []]
 
-  foldExamples
+  -- > Join (DProd (Var "x") (DProd (Var "y") (Lit True))) (Join (DProd (Var "z") (Lit True)) (Lit False))
+  -- ≈ (x ⋉ y ⋉ True) ⊔ (z ⋉ True) ⊔ False
+  -- ≈ (x ⋉ y) ⊔ z
+  -- x ⋉ True == x
+  -- x ⊔ False == x
+  --
+  -- what is the normal form for this term: `False`
+  println $ show𝕊 $ unnormalize $ set []
+  -- either x₁ ⊔ ⋯ ⊔ xₙ for n = 0
+  -- or just False
+  -- or {} in normal form
+  --
+  -- what is the normal form for this term: `True`
+  println $ show𝕊 $ unnormalize $ set [list []]
+  -- either x₁ ⋉ ⋯ ⋉ xₙ for n = 0
+  -- or Just True
+  -- or {[]}
+  --
+  -- think of (True ⋉ False) ⊔ (True ⋉ y)
+  -- as       (1    × 0    ) + (1    × y)
+  -- (we are not assuming (y ⋉ z == z ⋉ y) although this is true for arithmetic)
+
+  -- foldExamples
+
+example1 ∷ ℤ
+example1 = fold𝐿 (-1) (⩏) $ list [1,2,4]
 
 foldExamples ∷ IO ()
 foldExamples = do
@@ -19,10 +44,22 @@ foldExamples = do
   -- "list", as in "fold for lists").
   
   -- computing the max element in a list can be done with fold𝐿
-  let max ∷ 𝐿 ℕ → ℕ
-      max = fold𝐿 (nat 0) (⩏)
+  let max ∷ 𝐿 ℤ → ℤ
+      max = fold𝐿 0 (⩏)
 
-  println $ show𝕊 $ max $ list [nat 1,nat 2,nat 3,nat 4]
+  -- let reduce ∷ (a → a → a) → 𝐿 a → a
+  --     reduce f Nil = error "empty list"
+  --     reduce f (x :& Nil) = x
+  --     reduce f (x :& y :& xs) = f x (reduce f (y :& xs))
+
+  println $ show𝕊 $ max $ list []
+  println $ show𝕊 $ max $ list [1,2,3,4]
+  println $ show𝕊 $ max $ 1 :& 2 :& 3 :& 4 :& Nil
+  println $ show𝕊 $ (((1 ⩏ 2) ⩏ 3) ⩏ 4) ⩏ 0
+
+  -- fold𝐿 BASECASE × [1,2,3,4,5]
+  -- == 
+  -- ((((1 × 2) × 3) × 4) × 5) × BASECASE
 
   -- if the first argument is `None` return the second argument, and if it is
   -- `Some x`, keep it.

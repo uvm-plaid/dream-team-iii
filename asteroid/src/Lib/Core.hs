@@ -108,6 +108,10 @@ type ℤ = HS.Integer
 fromInteger ∷ HS.Integer → ℤ
 fromInteger = HS.fromIntegral
 
+-- RebindableSyntax
+negate ∷ ℤ → ℤ
+negate = HS.negate
+
 -- Natural numbers
 
 type ℕ = HS.Natural
@@ -157,10 +161,12 @@ data 𝐿 a = Nil | a :& 𝐿 a
 
 instance (Show a) ⇒ Show (𝐿 a) where show = show ∘ toLL
 
+-- to lazy list
 toLL ∷ 𝐿 a → [a]
 toLL Nil = []
 toLL (x :& xs) = x : toLL xs
 
+-- e.g., list [1,2,3]
 list ∷ [a] → 𝐿 a
 list [] = Nil
 list (x : xs) = x :& list xs
@@ -205,6 +211,12 @@ inbetween𝐿 _ Nil = Nil
 inbetween𝐿 i (x :& xs) = x :& prefixed𝐿 i xs
 
 -- Strings
+-- if there is something you need from the text package module Data.Text:
+--
+-- https://hackage.haskell.org/package/text-1.2.3.0/docs/Data-Text.html
+--
+-- then add it, or ping me on Slack.
+
 type 𝕊 = Text.Text
 
 error ∷ 𝕊 → a
@@ -222,11 +234,17 @@ single𝕊 = Text.singleton
 build𝕊 ∷ 𝐿 ℂ → 𝕊
 build𝕊 cs = Text.pack (toLL cs)
 
+chars ∷ 𝕊 → 𝐿 ℂ
+chars s = list (Text.unpack s)
+
 show𝕊 ∷ (Show a) ⇒ a → 𝕊
 show𝕊 = Text.pack ∘ Prelude.show
 
 lower𝕊 ∷ 𝕊 → 𝕊
 lower𝕊 = Text.toLower
+
+ith ∷ ℕ → 𝕊 → ℂ
+ith n s = Text.index s (HS.fromIntegral n)
 
 upper𝕊 ∷ 𝕊 → 𝕊
 upper𝕊 = Text.toUpper

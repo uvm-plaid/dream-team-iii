@@ -23,8 +23,8 @@ import Lib
 --   (x ⊔ y) ⊔ 0 = (x ⊔ y)                 [via ⊔-unit and ⊔-symmetry]
 
 data Exp =
-    Lit 𝔹
-  | Var 𝕊
-  | Join Exp Exp
-  | DProd Exp Exp
+    Lit 𝔹           -- e.g., True
+  | Var 𝕊           -- e.g., x
+  | Join Exp Exp    -- e.g., x ⊔ y
+  | DProd Exp Exp   -- e.g., x ⋉ y
   deriving (Eq,Ord,Show)
