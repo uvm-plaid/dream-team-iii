@@ -155,6 +155,10 @@ data a ∧ b = a :* b
 data 𝑂 a = None | Some a
   deriving (Eq,Ord,Show)
 
+unpackOptional ∷ 𝑂 a → a
+unpackOptional a = case a of
+  Some a -> a
+
 -- Lists (non-lazy)
 data 𝐿 a = Nil | a :& 𝐿 a
   deriving (Eq,Ord)

@@ -86,7 +86,8 @@ normalize e = case e of
   Var x -> set [list [x]]
   Join x y -> 
     (∪) (normalize x) (normalize y)
-  DProd x y -> set𝐿 $ cartEX (list𝑃 (normalize x)) (list𝑃 (normalize y))
+  DProd x y -> 
+    set𝐿 $ cartEX (list𝑃 (normalize x)) (list𝑃 (normalize y))
   
 
 equiv ∷ Exp → Exp → 𝔹
