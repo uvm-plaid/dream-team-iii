@@ -171,6 +171,9 @@ list ∷ [a] → 𝐿 a
 list [] = Nil
 list (x : xs) = x :& list xs
 
+(⧺) ∷ 𝐿 a → 𝐿 a → 𝐿 a
+xs ⧺ ys = foldr𝐿 ys (:&) xs
+
 fold𝐿 ∷ b → (a → b → b) → 𝐿 a → b
 fold𝐿 i _ Nil = i
 fold𝐿 i f (x :& xs) = fold𝐿 (f x i) f xs
@@ -307,6 +310,9 @@ removeMax𝑃 xs = case Set.maxView xs of
 
 (∖) ∷ (Ord a) ⇒ 𝑃 a → 𝑃 a → 𝑃 a
 (∖) = Set.difference
+
+--cart ∷ (Ord a) ⇒ 𝑃 a → 𝑃 a → 𝑃 a
+--cart = Set.cartesianProduct
 
 uniques ∷ (Ord a) ⇒ 𝐿 a → 𝐿 a
 uniques xs₀ = π₁ $ foldrFrom𝐿 xs₀ (Nil :* empty𝑃) $ \ x (xs :* seen) →

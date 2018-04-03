@@ -7,8 +7,11 @@ main ∷ IO ()
 main = do
   -- println $ show𝕊 $ foldr𝐿 Nil (:&) $ list [1,2,3,4]
   -- println $ show𝕊 $ Join (Lit False) (DProd (Lit True) (Var "x"))
-  -- println $ show𝕊 $ unnormalize $ set [list ["x","y"],list ["z"],list []]
+  println $ show𝕊 $ unnormalize $ set [list ["x","y"],list ["z"],list []]
 
+  println $ show𝕊 $ unnormalize $ set [list ["x","y"]]
+  
+  println $ show𝕊 $ unnormalize $ set [list ["x"], list ["y"]]
   -- > Join (DProd (Var "x") (DProd (Var "y") (Lit True))) (Join (DProd (Var "z") (Lit True)) (Lit False))
   -- ≈ (x ⋉ y ⋉ True) ⊔ (z ⋉ True) ⊔ False
   -- ≈ (x ⋉ y) ⊔ z
@@ -31,7 +34,7 @@ main = do
   -- as       (1    × 0    ) + (1    × y)
   -- (we are not assuming (y ⋉ z == z ⋉ y) although this is true for arithmetic)
 
-  -- foldExamples
+  foldExamples
 
 example1 ∷ ℤ
 example1 = fold𝐿 (-1) (⩏) $ list [1,2,4]
@@ -46,7 +49,7 @@ foldExamples = do
   -- computing the max element in a list can be done with fold𝐿
   let max ∷ 𝐿 ℤ → ℤ
       max = fold𝐿 0 (⩏)
-
+  
   -- let reduce ∷ (a → a → a) → 𝐿 a → a
   --     reduce f Nil = error "empty list"
   --     reduce f (x :& Nil) = x
