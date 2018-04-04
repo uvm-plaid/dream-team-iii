@@ -1,3 +1,10 @@
+# 04/04/2018
+
+- Went over JSDP normalize, unnormalize and interpret.
+
++ Next time: JSDPC normalize, unnormalize and interpret.
++ End goal: JSDPC + Monads (instead of directed products)
+
 # 02/21/2018
 
 - Went over basic project structure of long-term research code base

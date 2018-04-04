@@ -4,8 +4,7 @@ import Lib
 
 import Lang.JSDP.Syntax
 
--- interpret e env
--- + assume that all free variables in e are in keys(env)
+-- !! complete interpret
 interpret ∷ Exp → 𝕊 ⇰ 𝔹 → 𝑂 𝔹
 interpret e env = case e of
  Lit b -> return b
@@ -18,3 +17,4 @@ interpret e env = case e of
    bx ← interpret x env 
    by ← interpret y env
    return $ bx ⩓ by
+ If e₁ e₂ e₃ → undefined

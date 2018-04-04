@@ -54,22 +54,39 @@ unnormalize sps =
 -- map𝐿 (map𝐿 Var) $ list𝑃 sps ∷ 𝐿 (𝐿 Exp)
 -- foldr𝐿 (Lit True) 
 
--- oh my god it works
-cart ∷ 𝐿 𝕊 → 𝐿 𝕊 → 𝐿 (𝕊 ∧ 𝕊)
-cart _ Nil = Nil
-cart Nil _ = Nil
-cart (x :& Nil) (y :& Nil) = list [x :* y]
-cart (x :& xs) (y :& Nil) = (⧺) (list [x :* y]) (cart xs (list[y]))
-cart (x :& Nil) (y :& ys) = (⧺) (list [x :* y]) (cart (list[x]) ys)
-cart (x :& xs) ys = cart (list [x]) ys ⧺ cart xs ys
+combine ∷ a → 𝐿 b → 𝐿 (a ∧ b)
+combine _ Nil = Nil
+combine x (y :& ys) = (x :* y) :& combine x ys
 
+-- oh my god it works
+-- e.g., cart [1,2] [3,4] == [(1,3),(1,4),(2,3),(2,4)]
+cart ∷ 𝐿 𝕊 → 𝐿 𝕊 → 𝐿 (𝕊 ∧ 𝕊)
+-- e.g., cart [] [3,4] == []
+cart Nil _ = Nil
+-- e.g., cart [1,2] [3,4] 
+-- x == 1
+-- xs == [2]
+-- ys = [3,4]
+-- assume that the recursive call does the right thing:
+-- cart xs ys == cart [2] [3,4] == [(2,3),(2,4)]
+-- goal is to turn [(2,3),(2,4)] into [(1,3),(1,4),(2,3),(2,4)]
+-- so we need to prepend [(1,3),(1,4)]
+cart (x :& xs) ys = 
+  (combine x ys)  -- return [(1,3),(1,4)]
+  ⧺ 
+  (cart xs ys)    -- return [(2,3),(2,4)]
+
+-- e.g., 
+-- [[1,2],[3,4]] ⨳ [[5,6],[7,8]]
+-- ==
+-- [[1,2,5,6],[1,2,7,8],[3,4,5,6],[3,4,7,8]]
+--
+-- [X,Y] ⨳ [A,B]
+-- ==
+-- [XA,XB,YA,YB]
 cartEX ∷ 𝐿 (𝐿 𝕊) → 𝐿 (𝐿 𝕊) → 𝐿 (𝐿 𝕊)
 cartEX Nil _ = Nil
-cartEX _ Nil = Nil
-cartEX (x :& Nil) (y :& Nil) = list[x ⧺ y]
-cartEX (x :& xs) (y :& Nil) = list[x ⧺ y] ⧺ (cartEX xs (list [y]))
-cartEX (x :& Nil) (y :& ys) = list[x ⧺ y] ⧺ (cartEX (list[x]) ys)
-cartEX (x :& xs) ys = cartEX (list [x]) ys ⧺ cartEX xs ys
+cartEX (x :& xs) ys = map𝐿 (\ y → x ⧺ y) ys ⧺ cartEX xs ys
 
 -- [!!] TODO
 -- it should be the case that `unnormalize (normalize e)` returns an
@@ -87,7 +104,7 @@ normalize e = case e of
   Join x y -> 
     (∪) (normalize x) (normalize y)
   DProd x y -> 
-    set𝐿 $ cartEX (list𝑃 (normalize x)) (list𝑃 (normalize y))
+    set𝐿 $ cartWith (⧺) (list𝑃 (normalize x)) (list𝑃 (normalize y))
   
 
 equiv ∷ Exp → Exp → 𝔹

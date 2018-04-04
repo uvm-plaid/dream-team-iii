@@ -30,7 +30,7 @@ infixr 1 ≫=
 
 infixr 2 ⇰,↦
 
-infixl 3 ⩔,⩏,∪,∖,⩊
+infixl 3 ⩔,⩏,∪,∖,⩊,⧺
 infixl 4 ⩓,⩎,∩
 
 infix  5 ≟,≠,⋚,≤,≥,<,>,∈,⊆,⋿
@@ -154,10 +154,6 @@ data a ∧ b = a :* b
 -- Options
 data 𝑂 a = None | Some a
   deriving (Eq,Ord,Show)
-
-unpackOptional ∷ 𝑂 a → a
-unpackOptional a = case a of
-  Some a -> a
 
 -- Lists (non-lazy)
 data 𝐿 a = Nil | a :& 𝐿 a
@@ -351,18 +347,21 @@ insertWith𝐷 = Map.insertWith
 insert𝐷 ∷ (Ord k) ⇒ k → v → k ⇰ v → k ⇰ v
 insert𝐷 = insertWith𝐷 const
 
-lookup𝐷 ∷ (Ord k) ⇒ k → k ⇰ v → 𝑂 v
-lookup𝐷 k kvs = case Map.lookup k kvs of
+(#) ∷ (Ord k) ⇒ k ⇰ v → k → 𝑂 v
+(#) kvs k = case Map.lookup k kvs of
   HS.Nothing → None
   HS.Just v → Some v
 
+(#!) ∷ (Ord k) ⇒ k ⇰ v → k → v
+(#!) = (Map.!)
+
 (⋿) ∷ (Ord k) ⇒ k → k ⇰ v → 𝔹
-k ⋿ kvs = case lookup𝐷 k kvs of
+k ⋿ kvs = case kvs # k of
   None → False
   Some _ → True
 
 without𝐷 ∷ (Ord k) ⇒ k → k ⇰ v → 𝑂 (v ∧ (k ⇰ v))
-without𝐷 k kvs = case lookup𝐷 k kvs of
+without𝐷 k kvs = case kvs # k of
   None → None
   Some v → Some (v :* Map.delete k kvs)
 
@@ -397,7 +396,7 @@ keys𝐷 ∷ (Ord k) ⇒ k ⇰ v → 𝑃 k
 keys𝐷 = Map.keysSet
 
 restrict𝐷 ∷ (Ord k) ⇒ 𝑃 k → k ⇰ v → k ⇰ v
-restrict𝐷 ks kvs = foldFrom𝐿 (list𝑃 ks) empty𝐷 $ \ k → case lookup𝐷 k kvs of
+restrict𝐷 ks kvs = foldFrom𝐿 (list𝑃 ks) empty𝐷 $ \ k → case kvs # k of
   None → id
   Some v → insert𝐷 k v
 
@@ -446,6 +445,33 @@ eachWith𝐿 xs f = each𝐿 f xs
 
 exec𝐿 ∷ (Monad m) ⇒ 𝐿 (m ()) → m () 
 exec𝐿 = each𝐿 id
+
+-- Monad Instances
+
+instance Monad 𝐿 where
+  return ∷ ∀ a. a → 𝐿 a
+  return x = (x :& Nil)
+
+  (≫=) ∷ ∀ a b. 𝐿 a → (a → 𝐿 b) → 𝐿 b
+  Nil ≫= _ = Nil
+  (x :& xs) ≫= f = f x ⧺ (xs ≫= f)
+
+cartWith ∷ (a → b → c) → 𝐿 a → 𝐿 b → 𝐿 c
+cartWith f xs ys = do
+  x ← xs
+  y ← ys
+  return $ f x y
+
+(⨳) ∷ 𝐿 a → 𝐿 b → 𝐿 (a ∧ b)
+(⨳) = cartWith (\ x y → x :* y)
+
+instance Monad 𝑂 where
+  return ∷ ∀ a. a → 𝑂 a
+  return x = Some x
+
+  (≫=) ∷ ∀ a b. 𝑂 a → (a → 𝑂 b) → 𝑂 b
+  None ≫= _ = None
+  (Some x) ≫= f = f x
 
 -- IO
 
