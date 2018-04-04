@@ -7,8 +7,29 @@ import Lang.JSDP.Syntax
 -- e.g., if(x){if{y}{a}{b}}{if{z}{d}{e}}
 --          ^
 --      no nesting
---      in constructor form
---      Link "x" (Link "y" (Leaf "a") (Leaf "b")) (Link "z" (Leaf "d") (Leaf "e"))
+--
+-- in constructor form
+-- Link "x" (Link "y" (Leaf "a") (Leaf "b")) (Link "z" (Leaf "d") (Leaf "e"))
+--
+-- INVARIANT
+-- The variables mentioned in the link chain should be in strictly ascending
+-- order, that is:
+-- 
+--     if(x){if{y}{a}{b}}{if{z}{d}{e}}
+--
+-- is a valid IfChain because x < y and x < z. The following IfChain is
+-- therefore invalid:
+--
+--     if(y){if{x}{a}{b}}{if{z}{d}{e}}
+--
+-- because y ≮ z
+--
+-- also, this chain is not valid either:
+--
+--     if(x){if{y}{a}{b}}{if{x}{d}{e}}
+--
+-- because x ≮ x
+
 data IfChain = 
     Leaf 𝕊
   | Link 𝕊 IfChain IfChain
