@@ -21,3 +21,9 @@ clean:
 	cabal clean
 	rm -rf ../docs
 
+.PHONY: flushsandbox
+flushsandbox:
+	rm -rf cabal.sandbox.config
+	rm -rf .cabal-sandbox
+	cabal sandbox init
+	cabal install --dependencies-only
