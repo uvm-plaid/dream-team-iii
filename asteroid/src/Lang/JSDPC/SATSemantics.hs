@@ -17,4 +17,8 @@ interpret e env = case e of
    bx ← interpret x env 
    by ← interpret y env
    return $ bx ⩓ by
- If e₁ e₂ e₃ → undefined
+ If e₁ e₂ e₃ → do
+   g ← interpret e₁ env
+   case g of
+     True -> interpret e₂ env
+     False -> interpret e₃ env

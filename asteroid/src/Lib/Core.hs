@@ -161,6 +161,7 @@ data 𝐿 a = Nil | a :& 𝐿 a
 
 instance (Show a) ⇒ Show (𝐿 a) where show = show ∘ toLL
 
+
 -- to lazy list
 toLL ∷ 𝐿 a → [a]
 toLL Nil = []
