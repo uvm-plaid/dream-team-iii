@@ -20,12 +20,16 @@ executable asteroid
     , containers == 0.5.*
   exposed-modules:
     Asteroid
-    Lang.JSDP
-    Lang.JSDP.Equivalence
-    Lang.JSDP.Parse
-    Lang.JSDP.Pretty
-    Lang.JSDP.SATSemantics
-    Lang.JSDP.Syntax
+    --Lang.JSDP
+    --Lang.JSDP.Equivalence
+    --Lang.JSDP.Parse
+    --Lang.JSDP.Pretty
+    --Lang.JSDP.SATSemantics
+    --Lang.JSDP.Syntax
+    Lang.JSDPC
+    Lang.JSDPC.Equivalence
+    Lang.JSDPC.SATSemantics
+    Lang.JSDPC.Syntax
     Lib
     Lib.Core
   default-extensions:

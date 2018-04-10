@@ -1,8 +1,8 @@
-module Lang.JSDP.SATSemantics where
+module Lang.JSDPC.SATSemantics where
 
 import Lib
 
-import Lang.JSDP.Syntax
+import Lang.JSDPC.Syntax
 
 -- !! complete interpret
 interpret ∷ Exp → 𝕊 ⇰ 𝔹 → 𝑂 𝔹

@@ -1,8 +1,8 @@
-module Lang.JSDP.Equivalence where
+module Lang.JSDPC.Equivalence where
 
 import Lib
 
-import Lang.JSDP.Syntax
+import Lang.JSDPC.Syntax
 
 -- e.g., if(x){if(y){a}{b}}{if(z){d}{e}}
 --          ^
@@ -63,4 +63,5 @@ normalize e = case e of
     -- set𝐿 $ cartWith (⧺) (list𝑃 (normalize x)) (list𝑃 (normalize y))
   
 equiv ∷ Exp → Exp → 𝔹
-equiv e₁ e₂ = normalize e₁ ≟ normalize e₂
+equiv = undefined
+-- equiv e₁ e₂ = normalize e₁ ≟ normalize e₂

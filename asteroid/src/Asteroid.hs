@@ -1,8 +1,8 @@
 module Asteroid 
   ( module Lib
-  , module Lang.JSDP
+  , module Lang.JSDPC
   ) where
 
 import Lib
 
-import Lang.JSDP
+import Lang.JSDPC

@@ -1,4 +1,4 @@
-module Lang.JSDP.Syntax where
+module Lang.JSDPC.Syntax where
 
 import Lib
 
