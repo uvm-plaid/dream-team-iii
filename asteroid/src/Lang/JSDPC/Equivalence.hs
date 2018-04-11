@@ -81,10 +81,22 @@ dprodnf n1 n2 = case n1 of
   Link x y z
     -> Link x (joinnf y n2) (joinnf z n2)
  
---ifnf ∷ NF → NF → NF → NF
---ifnf g t e = undefined
+ifnf ∷ NF → NF → NF → NF
+ifnf sps n1 n2 = case sps of
+  Leaf g -> ifnfutil (list𝑃 g) n1 n2 
+  Link n n1 n2 -> Link n n1 n2
 
-ifnf (Leaf (sps ∷ 𝑃 (𝐿 𝕊))) (tb ∷ NF) (fb ∷ NF) = undefined
+ifnfutil ∷ 𝐿 (𝐿 𝕊) → NF → NF → NF
+ifnfutil (l :& Nil) n1 n2 = ifnfprods l n1 n2
+--was not sure what to do in this case; assumed that different lists within leaf should be joined
+ifnfutil (l :& ls) n1 n2 = joinnf (ifnfprods l n1 n2) (ifnfutil ls n1 n2)
+
+ifnfprods ∷ 𝐿 𝕊 → NF → NF → NF
+ifnfprods (x :& Nil) n1 n2 = Link x n1 n2
+ifnfprods (x :& xs) n1 n2 = dprodnf (Link x n1 n2) (ifnfprods xs n1 n2) 
+--ifnf (Leaf (sps ∷ 𝑃 (𝐿 𝕊))) (tb ∷ NF) (fb ∷ NF) = undefined
+
+
 -- !! complete normalize
 normalize 
   ∷ Exp  -- ^ The JSDP expression
@@ -97,14 +109,14 @@ normalize e = case e of
          Leaf $ set []
   Var x ->
     Leaf $ set [list [x]] 
-    -- set [list [x]]
   Join x y -> 
     joinnf (normalize x) (normalize y)
   DProd x y ->
     dprodnf (normalize x) (normalize y)
   If x y z ->
-    case x of --Only works when the guard is a Var, need to implement ifnf
-      Var v -> Link v (normalize y) (normalize z)
+    ifnf (normalize x) (normalize y) (normalize z)
+    --case x of --Only works when the guard is a Var, need to implement ifnf
+      --Var v -> Link v (normalize y) (normalize z)
 
 equiv ∷ Exp → Exp → 𝔹
 equiv = undefined
