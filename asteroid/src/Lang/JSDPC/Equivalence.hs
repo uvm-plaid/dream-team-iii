@@ -82,23 +82,34 @@ balanceNF (Leaf x) = Leaf x
 balanceNF (Link x y z) = balanceLink x y z
 
 moveFirstLinkUp ∷ LeafData -> NF -> NF -> NF
-moveFirstLinkUp x (Link a b c) (Link d e f) = Link a (Link x b (Link d e f) ) (Link x c (Link d e f))
+moveFirstLinkUp x (Link a b c) y = Link a (Link x b y) (Link x c y)
 
 moveSecondLinkUp ∷ LeafData -> NF -> NF -> NF
-moveSecondLinkUp x (Link g h i) (Link k l m) = Link k (Link x (Link g h i) l) (Link x (Link g h i) m)
+moveSecondLinkUp x y (Link k l m) = Link k (Link x y l) (Link x y m)
 
 -- if(y){if(x){a}{b}}{c} balances to if(x){if(y){a}{c}}{if(y){b}{c}}
 -- if(y){a}{if(x){b}{c}} balances to if(x){if(y){a}{b}}{if(y){a}{c}}
 
 balanceLink ∷ LeafData → NF → NF → NF
 balanceLink x (Leaf y) (Leaf z) = Link x (Leaf y) (Leaf z)
-balanceLink x (Link a b c) z = balanceLink x (balanceLink a b c) z
-balanceLink x y (Link a b c) = balanceLink x y (balanceLink a b c)
+balanceLink x (Link a b c) y = 
+  let first = balanceLink a b c in
+  case first of
+  Link d e f -> case (d > x) of
+    True -> moveFirstLinkUp x first y
+    False -> Link x first y
+
+balanceLink x y (Link a b c) = 
+  let second = balanceLink a b c in
+  case second of 
+  Link d e f -> case (d > x) of
+    True -> moveSecondLinkUp x y second
+    False -> Link x y second
+
 balanceLink x (Link a b c) (Link d e f) = 
   let temp = Link x (balanceLink a b c) (balanceLink d e f) in
   case temp of
-  Link x (Link g h i) (Link k l m) -> 
-    case (x > g) of      --TODO: better way to balance innards
+  Link x (Link g h i) (Link k l m) -> case (x > g) of      --TODO: better way than case?
     False -> case (x > k) of
       False -> Link x (Link g h i) (Link k l m)
       True -> moveSecondLinkUp x (Link g h i) (Link k l m)
