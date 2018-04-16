@@ -35,7 +35,7 @@ import Lang.JSDPC.Syntax
 --  | Link 𝕊 IfChain IfChain
 --  deriving (Ord, Eq, Show)
 
-type LeafData = 𝑃 (𝐿 𝕊)
+type LeafData = 𝑃 (𝐿 𝕊) 
 data NF = 
     Leaf LeafData
   | Link LeafData NF NF
@@ -48,16 +48,63 @@ data NF =
 -- NF is a "sum of products of if-chains" representation.
 --type NF = 𝑃 (𝐿 IfChain)
 
+emptySetOfListOfString ∷ 𝑃 (𝐿 𝕊)
+emptySetOfListOfString = empty𝑃
+
+singletonSetOfEmptyListOfString ∷ 𝑃 (𝐿 𝕊)
+singletonSetOfEmptyListOfString = set𝐿 Nil 
+
+unnormalizeLeaf ∷ 𝑃 (𝐿 𝕊) → Exp
+unnormalizeLeaf emptySetOfListOfString = Lit False
+unnormalizeLeaf singletonSetOfEmptyListOfString = Lit True
+
+unnormalizeLeaf x = 
+  let false = empty𝑃 in
+  let true = ((set [list []])∷𝑃 (𝐿 𝕊)) in
+  case x of
+  true -> Lit True
+  false -> Lit False
+  _ -> undefined
+
+unnormalizeLink ∷ NF → Exp
+unnormalizeLink x = undefined
+
 unnormalize ∷ NF → Exp
-unnormalize sps = undefined
+unnormalize (Leaf x) = unnormalizeLeaf x
+unnormalize (Link first second third) = undefined 
   -- foldr𝐿 (Lit False) Join
   -- $ map𝐿 (foldr𝐿 (Lit True) DProd)
   -- $ map𝐿 (map𝐿 Var) 
   -- $ list𝑃 sps
 
+balanceNF ∷ NF -> NF
+balanceNF (Leaf x) = Leaf x
+balanceNF (Link x y z) = balanceLink x y z
+
+moveFirstLinkUp ∷ LeafData -> NF -> NF -> NF
+moveFirstLinkUp x (Link a b c) (Link d e f) = Link a (Link x b (Link d e f) ) (Link x c (Link d e f))
+
+moveSecondLinkUp ∷ LeafData -> NF -> NF -> NF
+moveSecondLinkUp x (Link g h i) (Link k l m) = Link k (Link x (Link g h i) l) (Link x (Link g h i) m)
+
+-- if(y){if(x){a}{b}}{c} balances to if(x){if(y){a}{c}}{if(y){b}{c}}
+-- if(y){a}{if(x){b}{c}} balances to if(x){if(y){a}{b}}{if(y){a}{c}}
+
 balanceLink ∷ LeafData → NF → NF → NF
-balanceLink x y z = Link x y z
--- TODO: fix this to open up y and z and re-order if necessary
+balanceLink x (Leaf y) (Leaf z) = Link x (Leaf y) (Leaf z)
+balanceLink x (Link a b c) z = balanceLink x (balanceLink a b c) z
+balanceLink x y (Link a b c) = balanceLink x y (balanceLink a b c)
+balanceLink x (Link a b c) (Link d e f) = 
+  let temp = Link x (balanceLink a b c) (balanceLink d e f) in
+  case temp of
+  Link x (Link g h i) (Link k l m) -> 
+    case (x > g) of      --TODO: better way to balance innards
+    False -> case (x > k) of
+      False -> Link x (Link g h i) (Link k l m)
+      True -> moveSecondLinkUp x (Link g h i) (Link k l m)
+    True -> case (g > k) of
+      False -> moveFirstLinkUp x (Link g h i) (Link k l m)
+      True -> moveSecondLinkUp x (Link g h i) (Link k l m)
 
 joinnfL ∷ LeafData → NF → NF
 joinnfL s1 (Leaf s2) = Leaf (s1 ∪ s2)
