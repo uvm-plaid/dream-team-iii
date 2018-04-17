@@ -48,30 +48,8 @@ data NF =
 -- NF is a "sum of products of if-chains" representation.
 --type NF = 𝑃 (𝐿 IfChain)
 
-emptySetOfListOfString ∷ 𝑃 (𝐿 𝕊)
-emptySetOfListOfString = empty𝑃
-
-singletonSetOfEmptyListOfString ∷ 𝑃 (𝐿 𝕊)
-singletonSetOfEmptyListOfString = set𝐿 Nil 
-
-unnormalizeLeaf ∷ 𝑃 (𝐿 𝕊) → Exp
-unnormalizeLeaf emptySetOfListOfString = Lit False
-unnormalizeLeaf singletonSetOfEmptyListOfString = Lit True
-
-unnormalizeLeaf x = 
-  let false = empty𝑃 in
-  let true = ((set [list []])∷𝑃 (𝐿 𝕊)) in
-  case x of
-  true -> Lit True
-  false -> Lit False
-  _ -> undefined
-
-unnormalizeLink ∷ NF → Exp
-unnormalizeLink x = undefined
-
 unnormalize ∷ NF → Exp
-unnormalize (Leaf x) = unnormalizeLeaf x
-unnormalize (Link first second third) = undefined 
+unnormalize sps = undefined
   -- foldr𝐿 (Lit False) Join
   -- $ map𝐿 (foldr𝐿 (Lit True) DProd)
   -- $ map𝐿 (map𝐿 Var) 
@@ -92,19 +70,19 @@ moveSecondLinkUp x y (Link k l m) = Link k (Link x y l) (Link x y m)
 
 balanceLink ∷ LeafData → NF → NF → NF
 balanceLink x (Leaf y) (Leaf z) = Link x (Leaf y) (Leaf z)
-balanceLink x (Link a b c) y = 
+balanceLink x (Link a b c) (Leaf y) = 
   let first = balanceLink a b c in
   case first of
   Link d e f -> case (d > x) of
-    True -> moveFirstLinkUp x first y
-    False -> Link x first y
+    True -> moveFirstLinkUp x first (Leaf y)
+    False -> Link x first (Leaf y)
 
-balanceLink x y (Link a b c) = 
+balanceLink x (Leaf y) (Link a b c) = 
   let second = balanceLink a b c in
   case second of 
   Link d e f -> case (d > x) of
-    True -> moveSecondLinkUp x y second
-    False -> Link x y second
+    True -> moveSecondLinkUp x (Leaf y) second
+    False -> Link x (Leaf y) second
 
 balanceLink x (Link a b c) (Link d e f) = 
   let temp = Link x (balanceLink a b c) (balanceLink d e f) in
@@ -158,9 +136,9 @@ dprodnf (Link x y z) n2 = balanceLink x (dprodnf y n2) (dprodnf z n2)
 --     -> Link x (joinnf y n2) (joinnf z n2)
  
 ifnf ∷ NF → NF → NF → NF
-ifnf (Leaf g) n1 n2 = Link g n1 n2
--- if(if{n}{n1'}{n2'}){n1}{n2} --->   if(n){if{n1'}{n1}{n2}}{if{n2'}{n1}{n2}} ?????
-ifnf (Link n n1' n2') n1 n2 = undefined
+ifnf (Leaf g) n1 n2 = balanceLink g n1 n2
+-- if(if(x){y}{z}){a}{b} normalizes to if(x){if(y){a}{b}}{if(z){a}{b}}
+ifnf (Link x y z) a b = balanceLink x (ifnf y a b) (ifnf z a b) 
 
 -- maybe this is what you want???? -DCD
 -- combineLink ∷ LeafData → NF → NF → NF → NF
@@ -206,5 +184,5 @@ normalize e = case e of
       --Var v -> Link v (normalize y) (normalize z)
 
 equiv ∷ Exp → Exp → 𝔹
-equiv = undefined
+equiv e1 e2 = (normalize e1) == (normalize e2) --thats it?
 -- equiv e₁ e₂ = normalize e₁ ≟ normalize e₂
