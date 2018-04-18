@@ -111,6 +111,32 @@ dprodnf ∷ NF → NF → NF
 dprodnf (Leaf s1) nf2 = dprodnfL s1 nf2
 dprodnf (Link x y z) n2 = balanceLink x (dprodnf y n2) (dprodnf z n2)
 
+neoBalanceLink ∷ LeafData → NF → NF → NF
+neoBalanceLink x (Leaf a) (Leaf b) = 
+    Link x (Leaf a) (Leaf b)
+neoBalanceLink x (Leaf a) (Link b c d) = 
+    case (b < x) of
+      False -> Link x (Leaf a) (Link b c d)
+      True -> Link b (neoBalanceLink x (Leaf a) c) (neoBalanceLink x (Leaf a) d)
+neoBalanceLink x (Link a b c) (Leaf d) =
+    case (a < x) of
+      False -> Link x (Link a b c) (Leaf d)
+      True -> Link a (neoBalanceLink x b (Leaf d)) (neoBalanceLink x c (Leaf d))      
+neoBalanceLink x (Link a b c) (Link d e f) =
+    case (x < a) of
+      True ->
+        case (x < d) of
+          True -> Link x (neoBalanceLink a b c) (neoBalanceLink d e f)
+          False -> Link d (Link x (neoBalanceLink a b c) e) (Link x (neoBalanceLink a b c) f)
+      False ->
+        case (x < d) of
+          True -> Link a (neoBalanceLink x b (neoBalanceLink d e f)) (neoBalanceLink x c (neoBalanceLink d e f))
+          False ->
+            case (a < d) of
+              True ->
+                Link a (neoBalanceLink x b (neoBalanceLink d e f)) (neoBalanceLink x c (neoBalanceLink d e f))
+              False ->
+                Link d (neoBalanceLink x (neoBalanceLink a b c) e) (neoBalanceLink x (neoBalanceLink a b c) f)
 -- joinnf n1 n2 = case n1 of
 --   Leaf s1 ->
 --     case n2 of
