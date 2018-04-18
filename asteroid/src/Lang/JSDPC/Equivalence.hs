@@ -38,7 +38,11 @@ import Lang.JSDPC.Syntax
 type LeafData = 𝑃 (𝐿 𝕊) 
 data NF = 
     Leaf LeafData
-  | Link LeafData NF NF
+  -- if (x){y}{z} 
+  -- where x is a LeafData (call unnormalizeLeafData
+  -- and y and z are NF (call unnormalize recursively)
+  -- so you'll get xun, yun, zun, and you just build (If xun yun zun)
+  | Link LeafData NF NF 
   deriving (Eq,Ord,Show)
 
 --instance Ord IfChain where
@@ -48,12 +52,17 @@ data NF =
 -- NF is a "sum of products of if-chains" representation.
 --type NF = 𝑃 (𝐿 IfChain)
 
+unnormalizeLeafData ∷ LeafData → Exp
+unnormalizeLeafData sps = 
+  foldr𝐿 (Lit False) Join
+  $ map𝐿 (foldr𝐿 (Lit True) DProd)
+  $ map𝐿 (map𝐿 Var) 
+  $ list𝑃 sps
+  
+-- !! assignment: write down some non-trivial examples to normalize and unnormalize...
 unnormalize ∷ NF → Exp
-unnormalize sps = undefined
-  -- foldr𝐿 (Lit False) Join
-  -- $ map𝐿 (foldr𝐿 (Lit True) DProd)
-  -- $ map𝐿 (map𝐿 Var) 
-  -- $ list𝑃 sps
+unnormalize (Leaf ld) = unnormalizeLeafData ld
+unnormalize (Link lf nf1 nf2) = If (unnormalizeLeafData lf) (unnormalize nf1) (unnormalize nf2)
 
 balanceNF ∷ NF -> NF
 balanceNF (Leaf x) = Leaf x
@@ -85,6 +94,7 @@ balanceLink x (Leaf y) (Link a b c) =
     False -> Link x (Leaf y) second
 
 balanceLink x (Link a b c) (Link d e f) = 
+  -- David thinks this step is unnecessary
   let temp = Link x (balanceLink a b c) (balanceLink d e f) in
   case temp of
   Link x (Link g h i) (Link k l m) -> case (x > g) of      --TODO: better way than case?
@@ -94,6 +104,54 @@ balanceLink x (Link a b c) (Link d e f) =
     True -> case (g > k) of
       False -> moveFirstLinkUp x (Link g h i) (Link k l m)
       True -> moveSecondLinkUp x (Link g h i) (Link k l m)
+
+ddBalanceLink ∷ LeafData → NF → NF → NF
+ddBalanceLink x (Leaf y) (Leaf z) = Link x (Leaf y) (Leaf z)
+ddBalanceLink x (Link a b c) (Leaf y) = 
+  let first = ddBalanceLink a b c in
+  case first of
+  Link d e f -> case (d > x) of
+    True -> moveFirstLinkUp x first (Leaf y)
+    False -> Link x first (Leaf y)
+
+ddBalanceLink x (Leaf y) (Link a b c) = 
+  let second = ddBalanceLink a b c in
+  case second of 
+  Link d e f -> case (d > x) of
+    True -> moveSecondLinkUp x (Leaf y) second
+    False -> Link x (Leaf y) second
+
+-- !! homework, finish this pretty version
+-- if(x){if(a){b}{c}}{if(d){e}{f}}
+ddBalanceLink x (Link a b c) (Link d e f) = 
+  case (x ⋚ a,x ⋚ d,a ⋚ d) of
+    (LT,_,LT) -> 
+      -- we have x < a < d
+      Link x (Link a b c) (Link d e f)
+    (_,GT,LT) -> undefined
+      -- we have a < d < x
+      -- we want if(a)
+      --           { if(d){ if(x){b}{e} }{ if(x){b}{f} } }
+      --           { if(d){ if(x){c}{e} }{ if(x){c}{f} } }
+      Link a (Link d (Link x b e) (Link x b f))
+             (Link d (Link x c e) (Link x c f))
+    (LT,GT,_) -> undefined
+      -- we have d < x < a
+    (GT,_,GT) ->  undefined
+      -- we have d < a < x
+    (GT,LT,_) -> undefined
+      -- we have a < x < d
+    (_,LT,GT) -> undefined
+      -- we have x < d < a
+      Link x (Link a b c) (Link d e f)
+
+  -- Link x (Link g h i) (Link k l m) -> case (x > g) of
+  --   False -> case (x > k) of
+  --     False -> Link x (Link g h i) (Link k l m)
+  --     True -> moveSecondLinkUp x (Link g h i) (Link k l m)
+  --   True -> case (g > k) of
+  --     False -> moveFirstLinkUp x (Link g h i) (Link k l m)
+  --     True -> moveSecondLinkUp x (Link g h i) (Link k l m)
 
 joinnfL ∷ LeafData → NF → NF
 joinnfL s1 (Leaf s2) = Leaf (s1 ∪ s2)
@@ -161,6 +219,8 @@ neoBalanceLink x (Link a b c) (Link d e f) =
 --   Link x y z
 --     -> Link x (joinnf y n2) (joinnf z n2)
  
+-- ifnf n1 n2 n3
+-- if we assume n1,n2,n3 balanced, then this returns a balanced tree
 ifnf ∷ NF → NF → NF → NF
 ifnf (Leaf g) n1 n2 = balanceLink g n1 n2
 -- if(if(x){y}{z}){a}{b} normalizes to if(x){if(y){a}{b}}{if(z){a}{b}}
@@ -189,6 +249,7 @@ ifnf (Link x y z) a b = balanceLink x (ifnf y a b) (ifnf z a b)
 
 
 -- !! complete normalize
+-- it must be guaranteed that normalize will return a balanced tree
 normalize 
   ∷ Exp  -- ^ The JSDP expression
   → NF   -- ^ The normalized expression.

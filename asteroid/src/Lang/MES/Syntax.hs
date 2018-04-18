@@ -23,8 +23,18 @@ import Lib
 --   (ret(x) ⊞ ret(y)) ⊞ zero = (ret(x) ⊞ ret(y))  [via ⊞-unit and ⊞-symmetry]
 
 data Exp =
-    Ret Exp
+    Lit ℕ
+  | Ret Exp
   | Zero
-  | Var 𝕊
+  | FreeVar 𝕊
+  | BoundVar ℕ
   | Plus Exp Exp
-  | Bind Exp 𝕊 Exp
+  | Bind Exp 𝕊 Exp -- [Bind e₁ x e₂] ≜ [e₁ ≫= x. e₂]
+  -- e.g.,
+  -- return 5 ≫= x. return x
+  -- ≈
+  -- return 5 ≫= y. return y
+  --
+  -- λ.λ.1 0
+  --
+  -- outside this term, y doesn't exist
