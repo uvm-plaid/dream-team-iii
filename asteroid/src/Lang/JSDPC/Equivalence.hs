@@ -123,6 +123,7 @@ ddBalanceLink x (Leaf y) (Link a b c) =
 
 -- !! homework, finish this pretty version
 -- if(x){if(a){b}{c}}{if(d){e}{f}}
+
 ddBalanceLink x (Link a b c) (Link d e f) = 
   case (x ⋚ a,x ⋚ d,a ⋚ d) of
     (LT,_,LT) -> 
@@ -158,6 +159,49 @@ ddBalanceLink x (Link a b c) (Link d e f) =
   --   True -> case (g > k) of
   --     False -> moveFirstLinkUp x (Link g h i) (Link k l m)
   --     True -> moveSecondLinkUp x (Link g h i) (Link k l m)
+
+ramyCleanBalanceLink ∷ LeafData → NF → NF → NF
+ramyCleanBalanceLink x (Leaf y) (Leaf z) = Link x (Leaf y) (Leaf z)
+ramyCleanBalanceLink x (Link a b c) (Leaf y) = 
+    case (a < x) of
+    True  -> Link a (Link x b (Leaf y)) (Link x c (Leaf y))
+    False -> Link x (Link a b c) (Leaf y)
+
+ramyCleanBalanceLink x (Leaf y) (Link a b c) = 
+    case (a < x) of
+    True ->  Link a (Link x (Leaf y) b) (Link x (Leaf y) c)
+    False -> Link x (Leaf y) (Link a b c)
+
+ramyCleanBalanceLink x (Link a b c) (Link d e f) = 
+  case (x ⋚ a,x ⋚ d,a ⋚ d) of
+    (LT,_,LT) -> 
+      -- we have x < a < d
+      Link x (Link a b c) (Link d e f)
+    (_,GT,LT) -> 
+      -- we have a < d < x
+      Link a (ramyCleanBalanceLink x b (Link d e f))
+             (ramyCleanBalanceLink x c (Link d e f))
+--      Link a (Link d (Link x b e) (Link x b f))
+--             (Link d (Link x c e) (Link x c f))
+    (LT,GT,_) -> 
+      -- we have d < x < a
+      Link d (Link x (Link a b c) e)
+             (Link x (Link a b c) f)
+    (GT,_,GT) ->  
+      -- we have d < a < x
+      Link d (ramyCleanBalanceLink x (Link a b c) e)
+             (ramyCleanBalanceLink x (Link a b c) f)
+    (GT,LT,_) -> 
+      -- we have a < x < d
+      Link a (Link x b (Link d e f))
+             (Link x c (Link d e f))
+    (_,LT,GT) -> 
+      -- we have x < d < a
+      Link x (Link a b c) (Link d e f)
+    (LT,LT,_) -> Link x (Link a b c) (Link d e f)
+    (LT,EQ,_) -> Link x (Link a b c) (Link d e f)
+    (EQ,LT,_) -> Link x (Link a b c) (Link d e f)
+    (EQ,EQ,_) -> Link x (Link a b c) (Link d e f)
 
 joinnfL ∷ LeafData → NF → NF
 joinnfL s1 (Leaf s2) = Leaf (s1 ∪ s2)
