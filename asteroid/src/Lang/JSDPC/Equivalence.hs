@@ -108,6 +108,7 @@ balanceLink x (Link a b c) (Link d e f) =
 ddBalanceLink ∷ LeafData → NF → NF → NF
 ddBalanceLink x (Leaf y) (Leaf z) = Link x (Leaf y) (Leaf z)
 ddBalanceLink x (Link a b c) (Leaf y) = 
+  -- we don't need this step
   let first = ddBalanceLink a b c in
   case first of
   Link d e f -> case (d > x) of
@@ -174,34 +175,47 @@ ramyCleanBalanceLink x (Leaf y) (Link a b c) =
 
 ramyCleanBalanceLink x (Link a b c) (Link d e f) = 
   case (x ⋚ a,x ⋚ d,a ⋚ d) of
-    (LT,_,LT) -> 
-      -- we have x < a < d
+    (LT,LT,_) -> 
+      -- we have x < a 
+      --         x < d
       Link x (Link a b c) (Link d e f)
-    (_,GT,LT) -> 
-      -- we have a < d < x
+    (GT,_,LT) -> 
+      -- we have a < x
+      --         a < d
       Link a (ramyCleanBalanceLink x b (Link d e f))
              (ramyCleanBalanceLink x c (Link d e f))
---      Link a (Link d (Link x b e) (Link x b f))
---             (Link d (Link x c e) (Link x c f))
-    (LT,GT,_) -> 
-      -- we have d < x < a
-      Link d (Link x (Link a b c) e)
-             (Link x (Link a b c) f)
-    (GT,_,GT) ->  
-      -- we have d < a < x
+    (_,GT,GT) -> 
+      -- we have d < x
+      --         d < a
       Link d (ramyCleanBalanceLink x (Link a b c) e)
              (ramyCleanBalanceLink x (Link a b c) f)
-    (GT,LT,_) -> 
-      -- we have a < x < d
-      Link a (Link x b (Link d e f))
-             (Link x c (Link d e f))
-    (_,LT,GT) -> 
-      -- we have x < d < a
-      Link x (Link a b c) (Link d e f)
-    (LT,LT,_) -> Link x (Link a b c) (Link d e f)
-    (LT,EQ,_) -> Link x (Link a b c) (Link d e f)
-    (EQ,LT,_) -> Link x (Link a b c) (Link d e f)
-    (EQ,EQ,_) -> Link x (Link a b c) (Link d e f)
+    (EQ,_,_) ->
+      -- we have x = a
+      -- must be that d > x
+      Link x b (Link d e f)
+    (_,EQ,_) ->
+      -- we have x = d
+      -- must be that a > x
+      Link x (Link a b c) f
+    (_,_,EQ) ->
+      -- we have a = d
+      -- must be that x > a
+      -- if(x){if(a){b}{c}}{if(a){e}{f}}
+      -- if(a){if(x){b}{e}}{if(x){c}{f}}
+      Link a (ramyCleanBalanceLink x b e)
+             (ramyCleanBalanceLink x c f)
+    (_,_,_) -> error "impossible"
+
+checkInvariant ∷ NF → 𝔹
+checkInvariant (Leaf _) = True
+checkInvariant (Link x (Leaf y) (Leaf z)) = True
+checkInvariant (Link x (Link a b c) (Leaf y)) = x < a ⩓ checkInvariant (Link a b c)
+checkInvariant (Link x (Leaf y) (Link a b c)) = x < a ⩓ checkInvariant (Link a b c)
+checkInvariant (Link x (Link a b c) (Link d e f)) = 
+  x < a 
+  ⩓ x < d 
+  ⩓ checkInvariant (Link a b c) 
+  ⩓ checkInvariant (Link d e f)
 
 joinnfL ∷ LeafData → NF → NF
 joinnfL s1 (Leaf s2) = Leaf (s1 ∪ s2)

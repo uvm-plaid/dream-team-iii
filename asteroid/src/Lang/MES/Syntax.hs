@@ -27,7 +27,7 @@ data Exp =
   | Ret Exp
   | Zero
   | FreeVar 𝕊
-  | BoundVar ℕ
+  | BoundVar 𝕊
   | Plus Exp Exp
   | Bind Exp 𝕊 Exp -- [Bind e₁ x e₂] ≜ [e₁ ≫= x. e₂]
   -- e.g.,
