@@ -128,20 +128,26 @@ ddBalanceLink x (Link a b c) (Link d e f) =
     (LT,_,LT) -> 
       -- we have x < a < d
       Link x (Link a b c) (Link d e f)
-    (_,GT,LT) -> undefined
+    (_,GT,LT) ->
       -- we have a < d < x
       -- we want if(a)
       --           { if(d){ if(x){b}{e} }{ if(x){b}{f} } }
       --           { if(d){ if(x){c}{e} }{ if(x){c}{f} } }
       Link a (Link d (Link x b e) (Link x b f))
              (Link d (Link x c e) (Link x c f))
-    (LT,GT,_) -> undefined
+    (LT,GT,_) ->
       -- we have d < x < a
-    (GT,_,GT) ->  undefined
+      Link d (Link x (Link a b c) e)
+             (Link x (Link a b c) f)
+    (GT,_,GT) ->
       -- we have d < a < x
+      Link d (Link a (Link x b e) (Link x c e))
+             (Link a (Link x b f) (Link x c f))
     (GT,LT,_) -> undefined
       -- we have a < x < d
-    (_,LT,GT) -> undefined
+      Link a (Link x b (Link d e f))
+             (Link x c (Link d e f))
+    (_,LT,GT) ->
       -- we have x < d < a
       Link x (Link a b c) (Link d e f)
 
@@ -159,7 +165,7 @@ joinnfL s (Link x y z) = Link x (joinnfL s y) (joinnfL s z)
 
 joinnf ∷ NF → NF → NF
 joinnf (Leaf s1) nf2 = joinnfL s1 nf2
-joinnf (Link x y z) n2 = balanceLink x (joinnf y n2) (joinnf z n2)
+joinnf (Link x y z) n2 = ddBalanceLink x (joinnf y n2) (joinnf z n2)
 
 dprodnfL ∷ LeafData → NF → NF
 dprodnfL s1 (Leaf s2) = Leaf (set𝐿 (cartWith (⧺) (list𝑃 s1) (list𝑃 s2)))
@@ -167,7 +173,7 @@ dprodnfL s (Link x y z) = Link x (dprodnfL s y) (dprodnfL s z)
 
 dprodnf ∷ NF → NF → NF
 dprodnf (Leaf s1) nf2 = dprodnfL s1 nf2
-dprodnf (Link x y z) n2 = balanceLink x (dprodnf y n2) (dprodnf z n2)
+dprodnf (Link x y z) n2 = ddBalanceLink x (dprodnf y n2) (dprodnf z n2)
 
 neoBalanceLink ∷ LeafData → NF → NF → NF
 neoBalanceLink x (Leaf a) (Leaf b) = 
@@ -222,9 +228,9 @@ neoBalanceLink x (Link a b c) (Link d e f) =
 -- ifnf n1 n2 n3
 -- if we assume n1,n2,n3 balanced, then this returns a balanced tree
 ifnf ∷ NF → NF → NF → NF
-ifnf (Leaf g) n1 n2 = balanceLink g n1 n2
+ifnf (Leaf g) n1 n2 = ddBalanceLink g n1 n2
 -- if(if(x){y}{z}){a}{b} normalizes to if(x){if(y){a}{b}}{if(z){a}{b}}
-ifnf (Link x y z) a b = balanceLink x (ifnf y a b) (ifnf z a b) 
+ifnf (Link x y z) a b = ddBalanceLink x (ifnf y a b) (ifnf z a b) 
 
 -- maybe this is what you want???? -DCD
 -- combineLink ∷ LeafData → NF → NF → NF → NF

@@ -5,37 +5,9 @@ import Asteroid
 
 main ∷ IO ()
 main = do
-  -- println $ show𝕊 $ foldr𝐿 Nil (:&) $ list [1,2,3,4]
-  -- println $ show𝕊 $ Join (Lit False) (DProd (Lit True) (Var "x"))
-  println $ show𝕊 $ unnormalize $ set [list ["x","y"],list ["z"],list []]
-
-  println $ show𝕊 $ unnormalize $ set [list ["x","y"]]
-  
-  println $ show𝕊 $ unnormalize $ set [list ["x"], list ["y"]]
-  -- > Join (DProd (Var "x") (DProd (Var "y") (Lit True))) (Join (DProd (Var "z") (Lit True)) (Lit False))
-  -- ≈ (x ⋉ y ⋉ True) ⊔ (z ⋉ True) ⊔ False
-  -- ≈ (x ⋉ y) ⊔ z
-  -- x ⋉ True == x
-  -- x ⊔ False == x
-  --
-  -- what is the normal form for this term: `False`
-  println $ show𝕊 $ unnormalize $ set []
-  -- either x₁ ⊔ ⋯ ⊔ xₙ for n = 0
-  -- or just False
-  -- or {} in normal form
-  --
-  -- what is the normal form for this term: `True`
-  println $ show𝕊 $ unnormalize $ set [list []]
-  -- either x₁ ⋉ ⋯ ⋉ xₙ for n = 0
-  -- or Just True
-  -- or {[]}
-  --
-  -- think of (True ⋉ False) ⊔ (True ⋉ y)
-  -- as       (1    × 0    ) + (1    × y)
-  -- (we are not assuming (y ⋉ z == z ⋉ y) although this is true for arithmetic)
-
-  foldExamples
-
+    println $ show𝕊 $ normalize (If (Var "x") (If (Var "a") (Var "b") (Var "c")) (If (Var "d") (Var "e") (Var "f")))
+    println $ show𝕊 $ normalize (If (Join (Var "x") (Var "y")) (If (Var "a") (Var "b") (Var "c")) (If (Var "d") (Var "e") (Var "f")))
+    println $ show𝕊 $ normalize (If (DProd (Var "x") (Var "y")) (If (Var "a") (Var "b") (Var "c")) (If (Var "d") (Var "e") (Var "f")))
 example1 ∷ ℤ
 example1 = fold𝐿 (-1) (⩏) $ list [1,2,4]
 
