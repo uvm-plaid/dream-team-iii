@@ -74,14 +74,16 @@ balanceNF (Link x y z) = balanceLink x y z
 balanceLink ∷ LeafData → NF → NF → NF
 balanceLink x (Leaf y) (Leaf z) = Link x (Leaf y) (Leaf z)
 balanceLink x (Link a b c) (Leaf y) = 
-    case (a < x) of
-    True  -> Link a (Link x b (Leaf y)) (Link x c (Leaf y))
-    False -> Link x (Link a b c) (Leaf y)
+    case (a ⋚ x) of
+    LT  -> Link a (Link x b (Leaf y)) (Link x c (Leaf y))
+    GT -> Link x (Link a b c) (Leaf y)
+    EQ -> Link x b (Leaf y) 
 
 balanceLink x (Leaf y) (Link a b c) = 
-    case (a < x) of
-    True ->  Link a (Link x (Leaf y) b) (Link x (Leaf y) c)
-    False -> Link x (Leaf y) (Link a b c)
+    case (a ⋚ x) of
+    LT ->  Link a (Link x (Leaf y) b) (Link x (Leaf y) c)
+    GT -> Link x (Leaf y) (Link a b c)
+    EQ -> Link x (Leaf y) c
 
 balanceLink x (Link a b c) (Link d e f) = 
   case (x ⋚ a,x ⋚ d,a ⋚ d) of
