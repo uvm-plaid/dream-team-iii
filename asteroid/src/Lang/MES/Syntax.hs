@@ -1,4 +1,4 @@
-module Lang.MES.AST where
+module Lang.MES.Syntax where
 
 import Lib
 
@@ -22,14 +22,15 @@ import Lib
 -- e.g.:
 --   (ret(x) ⊞ ret(y)) ⊞ zero = (ret(x) ⊞ ret(y))  [via ⊞-unit and ⊞-symmetry]
 
+type Var = 𝕊
 data Exp =
-    Lit ℕ
+    Var Var
+  | Lit ℕ
   | Ret Exp
   | Zero
-  | FreeVar 𝕊
-  | BoundVar 𝕊
   | Plus Exp Exp
-  | Bind Exp 𝕊 Exp -- [Bind e₁ x e₂] ≜ [e₁ ≫= x. e₂]
+  | Bind Exp Var Exp 
+  -- [Bind e₁ x e₂] ≜ [e₁ ≫= x. e₂]
   -- e.g.,
   -- return 5 ≫= x. return x
   -- ≈
