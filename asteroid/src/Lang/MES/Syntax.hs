@@ -22,9 +22,9 @@ import Lib
 -- e.g.:
 --   (ret(x) ⊞ ret(y)) ⊞ zero = (ret(x) ⊞ ret(y))  [via ⊞-unit and ⊞-symmetry]
 
-type Var = 𝕊
+type Name = 𝕊
 data Exp =
-    Var Var
+    Var Name
   | Lit ℕ
   | Ret Exp
   | Zero

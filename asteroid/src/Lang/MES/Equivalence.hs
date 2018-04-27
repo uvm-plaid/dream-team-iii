@@ -4,8 +4,8 @@ import Lib
 
 import Lang.MES.Syntax
 
-type Neutral = Var
-data Product = Bind Neutral Var Product
+type Neutral = Name
+data Product = Bind Neutral Name Product
 type SumProd = 𝑃 Product 
 data IfChain =
     Leaf SumProd
@@ -16,4 +16,4 @@ unnormalize ∷ NF → Exp
 unnormalize = undefined
 
 normalize ∷ Exp → NF
-normalize = undefined
+normalize e = undefined
