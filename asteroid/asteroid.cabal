@@ -30,6 +30,8 @@ executable asteroid
     Lang.JSDPC.Equivalence
     Lang.JSDPC.SATSemantics
     Lang.JSDPC.Syntax
+    Lang.MES.Syntax
+    Lang.MES.Equivalence
     Lib
     Lib.Core
   default-extensions:

@@ -29,7 +29,7 @@ data Exp =
   | Ret Exp
   | Zero
   | Plus Exp Exp
-  | Bind Exp Var Exp 
+  | Bind Exp Name Exp 
   -- [Bind e₁ x e₂] ≜ [e₁ ≫= x. e₂]
   -- e.g.,
   -- return 5 ≫= x. return x
