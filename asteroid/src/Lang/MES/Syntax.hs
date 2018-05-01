@@ -30,6 +30,7 @@ data Exp =
   | Zero
   | Plus Exp Exp
   | Bind Exp Name Exp 
+  | If Exp Exp Exp
   -- [Bind e₁ x e₂] ≜ [e₁ ≫= x. e₂]
   -- e.g.,
   -- return 5 ≫= x. return x

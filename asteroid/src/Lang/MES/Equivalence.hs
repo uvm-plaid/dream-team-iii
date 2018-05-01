@@ -5,11 +5,11 @@ import Lib
 import Lang.MES.Syntax
 
 type Neutral = Name
-data Product = Bind Neutral Name Product
+data Product = BindNF Neutral Name Product
 type SumProd = 𝑃 Product 
 data IfChain =
     Leaf SumProd
-  | If SumProd IfChain IfChain
+  | IfNF SumProd IfChain IfChain
 type NF = IfChain
 
 unnormalize ∷ NF → Exp
