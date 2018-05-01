@@ -6,8 +6,8 @@ import Asteroid
 main ∷ IO ()
 main = do
     println $ show𝕊 $ normalize (If (Var "x") (If (Var "a") (Var "b") (Var "c")) (If (Var "d") (Var "e") (Var "f")))
-    println $ show𝕊 $ normalize (If (Join (Var "x") (Var "y")) (If (Var "a") (Var "b") (Var "c")) (If (Var "d") (Var "e") (Var "f")))
-    println $ show𝕊 $ normalize (If (DProd (Var "x") (Var "y")) (If (Var "a") (Var "b") (Var "c")) (If (Var "d") (Var "e") (Var "f")))
+    -- println $ show𝕊 $ normalize (If (Join (Var "x") (Var "y")) (If (Var "a") (Var "b") (Var "c")) (If (Var "d") (Var "e") (Var "f")))
+    -- println $ show𝕊 $ normalize (If (DProd (Var "x") (Var "y")) (If (Var "a") (Var "b") (Var "c")) (If (Var "d") (Var "e") (Var "f")))
 example1 ∷ ℤ
 example1 = fold𝐿 (-1) (⩏) $ list [1,2,4]
 
