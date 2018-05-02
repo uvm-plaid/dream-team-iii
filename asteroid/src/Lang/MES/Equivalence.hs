@@ -21,4 +21,5 @@ unnormalize = undefined
 
 normalize ∷ Exp → NF
 normalize e = case e of
-  Var x -> undefined 
+  Var x -> IfLeaf $ set𝐿 $ list $ [ProductLeaf x]
+  Lit n -> undefined
