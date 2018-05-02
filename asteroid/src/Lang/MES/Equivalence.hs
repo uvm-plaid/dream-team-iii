@@ -5,11 +5,13 @@ import Lib
 import Lang.MES.Syntax
 
 type Neutral = Name
-data Product = BindNF Neutral Name Product
+data Product = 
+  ProductLeaf Neutral
+  | BindNF Neutral Name Product
   deriving (Eq,Ord,Show)
 type SumProd = 𝑃 Product 
 data IfChain =
-    Leaf SumProd
+  IfLeaf SumProd
   | IfNF SumProd IfChain IfChain
   deriving (Eq,Ord,Show)
 type NF = IfChain
@@ -18,4 +20,5 @@ unnormalize ∷ NF → Exp
 unnormalize = undefined
 
 normalize ∷ Exp → NF
-normalize e = undefined
+normalize e = case e of
+  Var x -> undefined 
