@@ -312,6 +312,9 @@ removeMax𝑃 xs = case Set.maxView xs of
 (∖) ∷ (Ord a) ⇒ 𝑃 a → 𝑃 a → 𝑃 a
 (∖) = Set.difference
 
+map𝑃 ∷ (Ord b) ⇒ (a → b) → 𝑃 a → 𝑃 b
+map𝑃 f xs = set𝐿 (map𝐿 f (list𝑃 xs))
+
 --cart ∷ (Ord a) ⇒ 𝑃 a → 𝑃 a → 𝑃 a
 --cart = Set.cartesianProduct
 

@@ -4,12 +4,49 @@ import Lib
 
 import Lang.MES.Syntax
 
-type Neutral = Name
+data Neutral = NName Name | NLit ℕ
+  deriving (Eq,Ord,Show)
 
 --confused on what is the base data? JSDPC had String as it's base for leafdata
 data Product =
   ProductLeaf Neutral
-  | BindNF Neutral Name Product
+  | BindNF Neutral Name Product       -- it's bad if we have (bind A x (return x))
+                                      -- because we want it to be (A)
+                                      -- however (bind A x (return 1)) is OK
+  | ReturnNF Product
+  -- get rid of this now?
+  -- | ReturnBindNF Neutral Name Product 
+                                      -- == returnbind n x p == return (bind n x p)
+                                      -- return x == {x}
+                                      -- A ≔ {1,2,3}
+                                      -- λx.B = λx.{x+10,x+20}
+                                      -- bind A (λx.B) = {11,12,13,21,22,23}
+                                      -- bind A (λx.B) == {b | a ∈ A and b ∈ [x↦a]B}
+                                      -- return (bind A x B)
+                                      -- ≈
+                                      -- { {b | a ∈ A and b ∈ [x↦a]B} }
+                                      --
+                                      -- [left unit]: (return a) ≫= x . B == [x↦a]B
+                                      -- left unit law in sets
+                                      -- c ∈ ℕ
+                                      -- B ∈ ℘(ℕ) with one free variable x
+                                      -- {b | a ∈ {c} and b ∈ [x↦a]B}
+                                      -- ==
+                                      -- {b | b ∈ [x↦c]B}
+                                      -- ==
+                                      -- [x↦c]B
+                                      --
+                                      -- [right unit]: A ≫= x. return x == A
+                                      -- right unit law in sets
+                                      -- {b | a ∈ X and b ∈ [x↦a]{x}}
+                                      -- ==
+                                      -- {b | a ∈ X and b ∈ {a}}
+                                      -- == 
+                                      -- {a | a ∈ X}
+                                      -- ==
+                                      -- X
+                                      --
+                                      -- [assoc]: (A ≫= x. B) ≫= y. C == A ≫= x. (B ≫= y. C)
   deriving (Eq,Ord,Show)
 type SumProd = 𝑃 Product 
 data IfChain =
@@ -46,24 +83,50 @@ balanceIf x (IfNF a b c) (IfNF d e f) =
   (_,_,EQ) -> IfNF a (balanceIf x b e)
                      (balanceIf x c f)
 
+retp ∷ Product → Product
+retp (ProductLeaf n) = ReturnNF (ProductLeaf n)
+retp (BindNF n x p) = ReturnNF (BindNF n x p)
+
 retnf ∷ NF → NF
-retnf x = undefined
+retnf (IfLeaf sp) = IfLeaf (map𝑃 retp sp)
+retnf (IfNF sp nf₁ nf₂) = IfNF sp (retnf nf₁) (retnf nf₂)
+
+plusnfL ∷ SumProd → NF → NF
+plusnfL s1 (IfLeaf s2) = IfLeaf (s1 ∪ s2)
+plusnfL s (IfNF x y z) = IfNF x (plusnfL s y) (plusnfL s z)
 
 plusnf ∷ NF → NF → NF
-plusnf a b =  undefined
+plusnf (IfLeaf s1) nf2 = plusnfL s1 nf2
+plusnf (IfNF x y z) n2 = balanceIf x (plusnf y n2) (plusnf z n2)
 
+-- [!!] homework
+-- use same strategy as plusnf
 bindnf ∷ NF → Name → NF → NF
-bindnf a n b =  undefined
+bindnf (IfLeaf s1) n b = undefined
+bindnf (IfNF x y z) n b = undefined
+
+bindnfProd ∷ Product → Name → Product → NF
+bindnfProd (ReturnNF a) x p = undefined -- subst x a nf [left unit]
+bindnfProd a x (ReturnNF (ProductLeaf (NName y))) | x == y = undefined -- a
 
 ifnf ∷ NF → NF → NF → NF
 ifnf (IfLeaf a) b c = balanceIf a b c
 ifnf (IfNF x y z) a b = balanceIf x (ifnf y a b) (ifnf z a b)
 
+zeronf ∷ NF
+zeronf = IfLeaf $ empty𝑃
+
+varnf ∷ Name → NF
+varnf x = IfLeaf $ single𝑃 $ ProductLeaf $ NName x
+
+litnf ∷ ℕ → NF
+litnf n = IfLeaf $ single𝑃 $ ProductLeaf $ NLit n
+
 normalize ∷ Exp → NF
-normalize (Var n) = IfLeaf $ set𝐿 $ list $ [ProductLeaf n]
-normalize (Lit n) =  undefined
+normalize (Var n) = varnf n
+normalize (Lit n) =  litnf n
 normalize (Ret exp) = retnf (normalize exp)
-normalize Zero = IfLeaf $ set𝐿 $ list $ []
+normalize Zero = zeronf
 normalize (Plus e1 e2) = plusnf (normalize e1) (normalize e2)
 normalize (Bind e1 n e2) = bindnf (normalize e1) n (normalize e2)
 normalize (If e1 e2 e3) = ifnf (normalize e1) (normalize e2) (normalize e3)
