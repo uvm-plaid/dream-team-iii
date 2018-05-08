@@ -101,9 +101,13 @@ plusnf (IfNF x y z) n2 = balanceIf x (plusnf y n2) (plusnf z n2)
 
 -- [!!] homework
 -- use same strategy as plusnf
+bindnfL ∷ SumProd → Name → NF → NF
+bindnfL s1 n (IfLeaf s2) = undefined
+bindnfL s1 n (IfNF x y z) = balanceIf x (bindnfL s1 n y) (bindnfL s1 n z)
+
 bindnf ∷ NF → Name → NF → NF
-bindnf (IfLeaf s1) n b = undefined
-bindnf (IfNF x y z) n b = undefined
+bindnf (IfLeaf s1) n b = bindnfL s1 n b
+bindnf (IfNF x y z) n b = balanceIf x (bindnf y n b) (bindnf z n b)
 
 bindnfProd ∷ Product → Name → Product → NF
 bindnfProd (ReturnNF a) x p = undefined -- subst x a nf [left unit]
