@@ -110,8 +110,21 @@ bindnf (IfLeaf s1) n b = bindnfL s1 n b
 bindnf (IfNF x y z) n b = balanceIf x (bindnf y n b) (bindnf z n b)
 
 bindnfProd ∷ Product → Name → Product → NF
-bindnfProd (ReturnNF a) x p = undefined -- subst x a nf [left unit]
+bindnfProd (ReturnNF a) x p = IfLeaf $ single𝑃 $ substProdramy x a p -- subst x a nf [left unit]
 bindnfProd a x (ReturnNF (ProductLeaf (NName y))) | x == y = IfLeaf $ single𝑃  a
+
+substProdramy ∷ Name → Product → Product → Product
+substProdramy n p1 (ProductLeaf neu) = ProductLeaf $ substNeutralramy n p1 neu
+substProdramy n1 p1 (BindNF neu n2 p2) = case (n1 == n2) of
+  True -> BindNF neu n2 p2
+  False -> BindNF neu n2 (substProdramy n1 p1 p2)
+substProdramy n p1 (ReturnNF p2) = ReturnNF (substProdramy n p1 p2)
+
+substNeutralramy ∷ Name → Product → Neutral → Neutral
+substNeutralramy n1 p (NName n2) = case (n1 == n2) of
+  True -> undefined
+  False -> NName n2
+substNeutralramy n p (NLit num) = NLit num
 
 ifnf ∷ NF → NF → NF → NF
 ifnf (IfLeaf a) b c = balanceIf a b c
