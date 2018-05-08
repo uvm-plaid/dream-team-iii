@@ -99,18 +99,40 @@ plusnf ∷ NF → NF → NF
 plusnf (IfLeaf s1) nf2 = plusnfL s1 nf2
 plusnf (IfNF x y z) n2 = balanceIf x (plusnf y n2) (plusnf z n2)
 
+
+  --return $ IfLeaf $ set𝐿 $ list [x]
 -- [!!] homework
 -- use same strategy as plusnf
 bindnfL ∷ SumProd → Name → NF → NF
 bindnfL s1 n (IfLeaf s2) = undefined
+  --x <- s1
+  --y <- s2
+  --bindnfProd x n y
 bindnfL s1 n (IfNF x y z) = balanceIf x (bindnfL s1 n y) (bindnfL s1 n z)
 
 bindnf ∷ NF → Name → NF → NF
 bindnf (IfLeaf s1) n b = bindnfL s1 n b
 bindnf (IfNF x y z) n b = balanceIf x (bindnf y n b) (bindnf z n b)
 
+--bindnfProd (ReturnNF "a") "x" (x) = ReturnNF "a"  
+substituteNeutral ∷ Product → Name → Neutral → Product
+substituteNeutral _ _ (NLit n) = ProductLeaf $ NLit n
+substituteNeutral a x (NName n) 
+  | x == n = a
+  | otherwise = ProductLeaf $ NName n
+
+--bindnfProd (Return "a") "x" (BindNF 'x' "x" (x))
+substituteBindNf ∷ Product → Name → BindNF → Product
+susbtituteBindNf a x (BindNF neut name prod) =
+  | x == neut = undefined
+
+substitute ∷ Product → Name → Product → Product
+substitute a x (ProductLeaf b) = substituteNeutral a x b 
+substitute a x (BindNF b) = substituteBindNF a x b
+
+--bindnfProd (ReturnNF "a") "x" (x) = ReturnNF "a" 
 bindnfProd ∷ Product → Name → Product → NF
-bindnfProd (ReturnNF a) x p = undefined -- subst x a nf [left unit]
+bindnfProd (ReturnNF a) x p = bindnfProd a x p  -- subst x a nf [left unit]
 bindnfProd a x (ReturnNF (ProductLeaf (NName y))) | x == y = undefined -- a
 
 ifnf ∷ NF → NF → NF → NF
