@@ -121,14 +121,11 @@ substituteNeutral a x (NName n)
   | x == n = a
   | otherwise = ProductLeaf $ NName n
 
---bindnfProd (Return "a") "x" (BindNF 'x' "x" (x))
-substituteBindNf ∷ Product → Name → BindNF → Product
-susbtituteBindNf a x (BindNF neut name prod) =
-  | x == neut = undefined
-
 substitute ∷ Product → Name → Product → Product
 substitute a x (ProductLeaf b) = substituteNeutral a x b 
-substitute a x (BindNF b) = substituteBindNF a x b
+substitute a x (BindNF c d e) 
+  | x == d =    undefined --BindNF $ (substituteNeutral a x c) d e
+  | otherwise = undefined 
 
 --bindnfProd (ReturnNF "a") "x" (x) = ReturnNF "a" 
 bindnfProd ∷ Product → Name → Product → NF
