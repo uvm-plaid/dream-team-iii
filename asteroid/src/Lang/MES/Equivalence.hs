@@ -111,7 +111,7 @@ bindnf (IfNF x y z) n b = balanceIf x (bindnf y n b) (bindnf z n b)
 
 bindnfProd ∷ Product → Name → Product → NF
 bindnfProd (ReturnNF a) x p = undefined -- subst x a nf [left unit]
-bindnfProd a x (ReturnNF (ProductLeaf (NName y))) | x == y = undefined -- a
+bindnfProd a x (ReturnNF (ProductLeaf (NName y))) | x == y = IfLeaf $ single𝑃  a
 
 ifnf ∷ NF → NF → NF → NF
 ifnf (IfLeaf a) b c = balanceIf a b c
