@@ -104,10 +104,10 @@ plusnf (IfNF x y z) n2 = balanceIf x (plusnf y n2) (plusnf z n2)
 -- [!!] homework
 -- use same strategy as plusnf
 bindnfL ∷ SumProd → Name → NF → NF
-bindnfL s1 n (IfLeaf s2) = undefined
-  --x <- s1
-  --y <- s2
-  --bindnfProd x n y
+bindnfL s1 n (IfLeaf s2) = do
+  x <- (list𝑃 s1)
+  y <- (list𝑃 s2)
+  IfLeaf $ bindnfProd x n y
 bindnfL s1 n (IfNF x y z) = balanceIf x (bindnfL s1 n y) (bindnfL s1 n z)
 
 bindnf ∷ NF → Name → NF → NF
