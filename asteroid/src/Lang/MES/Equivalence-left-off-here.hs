@@ -14,7 +14,7 @@ data Product =
   | BindNF Neutral Name Product       -- it's bad if we have (bind A x (return x))
                                       -- because we want it to be (A)
                                       -- however (bind A x (return 1)) is OK
-  | ReturnNF Product
+  | ReturnNF Neutral
   -- get rid of this now?
   -- | ReturnBindNF Neutral Name Product 
                                       -- == returnbind n x p == return (bind n x p)
@@ -50,8 +50,13 @@ data Product =
                                       -- [assoc]: (A ≫= x. B) ≫= y. C == A ≫= x. (B ≫= y. C)
   deriving (Eq,Ord,Show)
 type SumProd = 𝑃 Product 
+data ReturnLayer = 
+    RawSumProd (𝑃 Product)
+  | ReturnSumProd ReturnLayer
+  deriving (Eq,Ord,Show)
+
 data IfChain =
-    IfLeaf SumProd
+    IfLeaf ReturnLayer
   | IfNF SumProd IfChain IfChain
   deriving (Eq,Ord,Show)
 type NF = IfChain
@@ -85,7 +90,7 @@ balanceIf x (IfNF a b c) (IfNF d e f) =
                      (balanceIf x c f)
 
 retnf ∷ NF → NF
-retnf (IfLeaf sp) = IfLeaf (map𝑃 ReturnNF sp) -- WRONG fix later (see left off here file)
+retnf (IfLeaf sp) = IfLeaf $ ReturnSumProd sp
 retnf (IfNF sp nf₁ nf₂) = IfNF sp (retnf nf₁) (retnf nf₂)
 
 plusnfL ∷ SumProd → NF → NF
@@ -151,3 +156,4 @@ normalize Zero = zeronf
 normalize (Plus e1 e2) = plusnf (normalize e1) (normalize e2)
 normalize (Bind e1 n e2) = bindnf (normalize e1) n (normalize e2)
 normalize (If e1 e2 e3) = ifnf (normalize e1) (normalize e2) (normalize e3)
+
