@@ -84,12 +84,8 @@ balanceIf x (IfNF a b c) (IfNF d e f) =
   (_,_,EQ) -> IfNF a (balanceIf x b e)
                      (balanceIf x c f)
 
-retp ∷ Product → Product
-retp (ProductLeaf n) = ReturnNF (ProductLeaf n)
-retp (BindNF n x p) = ReturnNF (BindNF n x p)
-
 retnf ∷ NF → NF
-retnf (IfLeaf sp) = IfLeaf (map𝑃 retp sp)
+retnf (IfLeaf sp) = IfLeaf (map𝑃 ReturnNF sp) -- WRONG fix later
 retnf (IfNF sp nf₁ nf₂) = IfNF sp (retnf nf₁) (retnf nf₂)
 
 plusnfL ∷ SumProd → NF → NF
@@ -100,39 +96,39 @@ plusnf ∷ NF → NF → NF
 plusnf (IfLeaf s1) nf2 = plusnfL s1 nf2
 plusnf (IfNF x y z) n2 = balanceIf x (plusnf y n2) (plusnf z n2)
 
+substNeutral ∷ Name → Product → Neutral → Product
+substNeutral _ _ (NLit n) = ProductLeaf $ NLit n
+substNeutral x a (NName n) 
+  | x == n = a
+  | otherwise = ProductLeaf $ NName n
 
-  --return $ IfLeaf $ set𝐿 $ list [x]
--- [!!] homework
--- use same strategy as plusnf
+subst ∷ Name → Product → Product → Product
+subst x a (ProductLeaf b) = substNeutral x a b 
+subst x a (BindNF b y c) 
+  | x == y    = bindnfProd (substNeutral x a b) y c
+  | otherwise = bindnfProd (substNeutral x a b) y (subst x a c)
+
+bindnfProd ∷ Product → Name → Product → Product
+bindnfProd a x (ReturnNF (ProductLeaf (NName y))) | x == y = a -- right unit
+bindnfProd (ProductLeaf a) x b = BindNF a x b
+bindnfProd (BindNF a x b) y c = BindNF a x (bindnfProd b y c) -- associativity
+bindnfProd (ReturnNF a) x p = subst x a p -- left unit
+
+bindnfProdNF ∷ Product → Name → Product → NF
+bindnfProdNF a x p = IfLeaf $ single𝑃 $ bindnfProd a x p
+
+bindnfProdNFNF ∷ Product → Name → NF → NF
+bindnfProdNFNF a x (IfLeaf b) = fold𝐿 zeronf plusnf $ map𝐿 (\ b' → bindnfProdNF a x b') $ list𝑃 b
+bindnfProdNFNF a x (IfNF c d e) = IfNF c (bindnfProdNFNF a x d) (bindnfProdNFNF a x e)
+
 bindnfL ∷ SumProd → Name → NF → NF
-bindnfL s1 n (IfLeaf s2) = undefined --do
-  --x <- list𝑃 s1
-  --y <- list𝑃 s2
-  --bindnfProd x n y
-bindnfL s1 n (IfNF x y z) = balanceIf x (bindnfL s1 n y) (bindnfL s1 n z)
+bindnfL a x b = fold𝐿 zeronf plusnf $ do
+  a' ← list𝑃 a
+  return $ bindnfProdNFNF a' x b
 
 bindnf ∷ NF → Name → NF → NF
 bindnf (IfLeaf s1) n b = bindnfL s1 n b
 bindnf (IfNF x y z) n b = balanceIf x (bindnf y n b) (bindnf z n b)
-
---bindnfProd (ReturnNF "a") "x" (x) = ReturnNF "a"  
-substituteNeutral ∷ Product → Name → Neutral → Product
-substituteNeutral _ _ (NLit n) = ProductLeaf $ NLit n
-substituteNeutral a x (NName n) 
-  | x == n = a
-  | otherwise = ProductLeaf $ NName n
-
---bindnfProd (ReturnNF "a") "x" (BindNF ? "x" x)
-substitute ∷ Product → Name → Product → Product
-substitute a x (ProductLeaf b) = substituteNeutral a x b 
-substitute a x (BindNF c d e) 
-  | x == d =    BindNF c d e--BindNF $ (substituteNeutral a x c) d e
-  | otherwise = substitute a x e
-
---bindnfProd (ReturnNF "a") "x" (x) = ReturnNF "a" 
-bindnfProd ∷ Product → Name → Product → NF
-bindnfProd (ReturnNF a) x p = bindnfProd a x p  -- subst x a nf [left unit]
-bindnfProd a x (ReturnNF (ProductLeaf (NName y))) | x == y = IfLeaf $ single𝑃 a
 
 ifnf ∷ NF → NF → NF → NF
 ifnf (IfLeaf a) b c = balanceIf a b c
