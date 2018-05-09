@@ -58,7 +58,7 @@ type NF = IfChain
 unnormalize ∷ NF → Exp
 unnormalize = undefined
 
-balanceIf ∷ SumProd → NF → NF → NF  --same as JSDPC balanceLink?
+balanceIf ∷ SumProd → NF → NF → NF
 balanceIf x (IfLeaf y) (IfLeaf z)= IfNF x (IfLeaf y) (IfLeaf z)
 balanceIf x (IfNF a b c) (IfLeaf y) = 
   case (a ⋚ x) of
@@ -104,9 +104,9 @@ plusnf (IfNF x y z) n2 = balanceIf x (plusnf y n2) (plusnf z n2)
 -- [!!] homework
 -- use same strategy as plusnf
 bindnfL ∷ SumProd → Name → NF → NF
-bindnfL s1 n (IfLeaf s2) = undefined
-  --x <- s1
-  --y <- s2
+bindnfL s1 n (IfLeaf s2) = undefined --do
+  --x <- list𝑃 s1
+  --y <- list𝑃 s2
   --bindnfProd x n y
 bindnfL s1 n (IfNF x y z) = balanceIf x (bindnfL s1 n y) (bindnfL s1 n z)
 
@@ -124,13 +124,13 @@ substituteNeutral a x (NName n)
 substitute ∷ Product → Name → Product → Product
 substitute a x (ProductLeaf b) = substituteNeutral a x b 
 substitute a x (BindNF c d e) 
-  | x == d =    undefined --BindNF $ (substituteNeutral a x c) d e
-  | otherwise = undefined 
+  | x == d =    BindNF c d e--BindNF $ (substituteNeutral a x c) d e
+  | otherwise = substitute a x e
 
 --bindnfProd (ReturnNF "a") "x" (x) = ReturnNF "a" 
 bindnfProd ∷ Product → Name → Product → NF
 bindnfProd (ReturnNF a) x p = bindnfProd a x p  -- subst x a nf [left unit]
-bindnfProd a x (ReturnNF (ProductLeaf (NName y))) | x == y = undefined -- a
+bindnfProd a x (ReturnNF (ProductLeaf (NName y))) | x == y = IfLeaf $ single𝑃 a
 
 ifnf ∷ NF → NF → NF → NF
 ifnf (IfLeaf a) b c = balanceIf a b c
