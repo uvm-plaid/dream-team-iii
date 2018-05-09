@@ -10,6 +10,7 @@ data Neutral = NName Name | NLit ℕ
 --confused on what is the base data? JSDPC had String as it's base for leafdata
 data Product =
   ProductLeaf Neutral
+  --should   |   be a Product?
   | BindNF Neutral Name Product       -- it's bad if we have (bind A x (return x))
                                       -- because we want it to be (A)
                                       -- however (bind A x (return 1)) is OK
@@ -121,6 +122,7 @@ substituteNeutral a x (NName n)
   | x == n = a
   | otherwise = ProductLeaf $ NName n
 
+--bindnfProd (ReturnNF "a") "x" (BindNF ? "x" x)
 substitute ∷ Product → Name → Product → Product
 substitute a x (ProductLeaf b) = substituteNeutral a x b 
 substitute a x (BindNF c d e) 
